@@ -61,6 +61,23 @@ void Update()
     float dt = float(t2-ti);
     ti = t2;
     std::cout << "Render time: " << dt << " ms." << std::endl;
+    Uint8* keystate = SDL_GetKeyState( 0 );
+    if( keystate[SDLK_UP] )
+    {
+        camera_position.z += 0.1f;
+    }
+    if( keystate[SDLK_DOWN] )
+    {
+        camera_position.z -= 0.1f;
+    }
+    if( keystate[SDLK_LEFT] )
+    {
+        camera_position.x -= 0.1f;
+    }
+    if( keystate[SDLK_RIGHT] )
+    {
+        camera_position.x += 0.1f;
+    }
 }
 
 void Draw()
