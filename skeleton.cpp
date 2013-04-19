@@ -32,8 +32,8 @@ struct Intersection
 void Update();
 void Draw();
 bool ClosestIntersection(
-        vec3 start,
-        vec3 dir,
+        const vec3& start,
+        const vec3& dir,
         const std::vector<Triangle>& triangles,
         Intersection& closestIntersection);
 
@@ -90,8 +90,8 @@ void Draw()
 }
 
 bool ClosestIntersection(
-        vec3 start,
-        vec3 dir,
+        const vec3& start,
+        const vec3& dir,
         const std::vector<Triangle>& triangles,
         Intersection & closestIntersection)
 {
@@ -99,10 +99,9 @@ bool ClosestIntersection(
     bool found_triangle = false;
     for (int i = 0; i < triangles.size(); ++i)
     {
-        Triangle triangle = triangles[i];
-        vec3 e1 = triangle.v1 - triangle.v0;
-        vec3 e2 = triangle.v2 - triangle.v0;
-        vec3 b = start - triangle.v0;
+        vec3 e1 = triangles[i].v1 - triangles[i].v0;
+        vec3 e2 = triangles[i].v2 - triangles[i].v0;
+        vec3 b = start - triangles[i].v0;
         mat3 A(-dir, e1, e2);
         vec3 x = glm::inverse(A) * b;
 
@@ -112,9 +111,8 @@ bool ClosestIntersection(
         float v = x.z;
         if(u >= 0 && v >= 0 && (u+v) <= 1 && t >= 0)
         {
-            vec3 coord = triangle.v0 + (e1*u) + (e2*v);
+            vec3 coord = triangles[i].v0 + (e1*u) + (e2*v);
             float length = glm::distance(coord, start);;
-            //float length = (coord.x > 0 ? coord.x : -coord.x) + (coord.y > 0 ? coord.y : -coord.y) + (coord.z + 1);
             if(length < current_min)
             {
                 current_min = length;
