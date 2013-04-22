@@ -80,30 +80,31 @@ void Update()
     }
 }
 
-void Draw()
-{
-    if( SDL_MUSTLOCK(screen) )
+void Draw() {
+    if (SDL_MUSTLOCK(screen))
         SDL_LockSurface(screen);
 
     Intersection intersection;
-    for( int y=0; y<SCREEN_HEIGHT; ++y )
-    {
-        for( int x=0; x<SCREEN_WIDTH; ++x )
-        {
-            vec3 dir(x - SCREEN_WIDTH / 2, y - SCREEN_HEIGHT / 2, focal_length);
+
+    for (int y = 0; y < SCREEN_HEIGHT; ++y) {
+		vec3 dir(0, y - SCREEN_HEIGHT / 2, focal_length);
+
+        for (int x = 0; x < SCREEN_WIDTH; ++x) {
+            dir.x = x - SCREEN_WIDTH / 2;
+
             vec3 color(0, 0, 0);
-            if(ClosestIntersection(camera_position, dir, triangles, intersection))
-            {
+            if (ClosestIntersection(camera_position, dir, triangles, intersection)) {
                 color = triangles[intersection.triangleIndex].color;
             }
-            PutPixelSDL( screen, x, y, color );
+
+            PutPixelSDL(screen, x, y, color);
         }
     }
 
-    if( SDL_MUSTLOCK(screen) )
+    if (SDL_MUSTLOCK(screen))
         SDL_UnlockSurface(screen);
 
-    SDL_UpdateRect( screen, 0, 0, 0, 0 );
+    SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
 
 bool ClosestIntersection(
