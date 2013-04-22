@@ -13,6 +13,7 @@ public:
 	glm::vec3 v0;
 	glm::vec3 v1;
 	glm::vec3 v2;
+	glm::vec3 e1, e2;
 	glm::vec3 normal;
 	glm::vec3 color;
 
@@ -24,9 +25,9 @@ public:
 
 	void ComputeNormal()
 	{
-		glm::vec3 e1 = v1-v0;
-		glm::vec3 e2 = v2-v0;
-		normal = glm::normalize( glm::cross( e2, e1 ) );
+		e1 = v1 - v0;
+		e2 = v2 - v0;
+		normal = glm::normalize(glm::cross(e2, e1));
 	}
 };
 
@@ -48,7 +49,7 @@ void LoadTestModel( std::vector<Triangle>& triangles )
 	vec3 white(  0.75f, 0.75f, 0.75f );
 
 	triangles.clear();
-	triangles.reserve( 5*2*3 );
+	triangles.reserve(5 * 2 * 3);
 
 	// ---------------------------------------------------------------------------
 	// Room

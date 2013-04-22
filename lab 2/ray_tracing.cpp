@@ -115,21 +115,22 @@ bool ClosestIntersection(
 {
     float current_min = std::numeric_limits<float>::max();
     bool found_triangle = false;
-    for (int i = 0; i < triangles.size(); ++i)
-    {
-        vec3 e1 = triangles[i].v1 - triangles[i].v0;
-        vec3 e2 = triangles[i].v2 - triangles[i].v0;
-        vec3 b = start - triangles[i].v0;
-        mat3 A(-dir, e1, e2);
-        vec3 x = glm::inverse(A) * b;
 
-        // Is this inside the triangle.
-        float t = x.x;
-        float u = x.y;
-        float v = x.z;
+	vec3 x;
+    float & t = x.x;
+    float & u = x.y;
+    float & v = x.z;
+
+    for (int i = 0; i < triangles.size(); ++i) {
+        vec3 b = start - triangles[i].v0;
+
+        mat3 A(-dir, triangles[i].e1, triangles[i].e2);
+        x = glm::inverse(A) * b;
+
+        // Is this inside the triangle?
         if(u >= 0 && v >= 0 && (u+v) <= 1 && t >= 0)
         {
-            vec3 coord = triangles[i].v0 + (e1*u) + (e2*v);
+            vec3 coord = triangles[i].v0 + (triangles[i].e1 * u) + (triangles[i].e2 * v);
             float length = glm::distance(coord, start);;
             if(length < current_min)
             {
