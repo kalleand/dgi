@@ -1,8 +1,2 @@
-glm/
-CMakeFiles/
-cmake_install.cmake
-CMakeCache.txt
 Gradient
 StarField
-screenshot.bmp
-Makefile

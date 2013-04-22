@@ -21,7 +21,7 @@ endif ( NOT SDL_FOUND )
 if(SDL_FOUND)
 	include_directories(
 		${SDL_INCLUDE_DIR}
-		${PROJECT_SOURCE_DIR}/glm
+		${PROJECT_SOURCE_DIR}/../glm
 	)
 	#link_libraries(${SDL_LIBRARY})
 	target_link_libraries(Gradient ${SDL_LIBRARY})
