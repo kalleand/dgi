@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include "SDLauxiliary.h"
 #include "TestModel.h"
+#include <omp.h>
 
 using glm::vec3;
 using glm::mat3;
@@ -84,9 +85,9 @@ void Draw() {
     if (SDL_MUSTLOCK(screen))
         SDL_LockSurface(screen);
 
-    Intersection intersection;
-
+    #pragma omp parallel for
     for (int y = 0; y < SCREEN_HEIGHT; ++y) {
+	    Intersection intersection;
 		vec3 dir(0, y - SCREEN_HEIGHT / 2, focal_length);
 
         for (int x = 0; x < SCREEN_WIDTH; ++x) {
