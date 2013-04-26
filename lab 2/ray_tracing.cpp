@@ -128,8 +128,8 @@ void Draw() {
 
             vec3 color(0, 0, 0);
             if (ClosestIntersection(camera_position, dir, triangles, intersection)) {
-                //color = triangles[intersection.triangleIndex].color;
-                color = DirectLight(intersection) * triangles[intersection.triangleIndex].color;
+				color = triangles[intersection.triangleIndex].color;
+                color *= DirectLight(intersection);
             }
 
             PutPixelSDL(screen, x, y, color);
@@ -152,6 +152,14 @@ vec3 DirectLight(const Intersection & i) {
     vec3 distance = lightPos - i.position;
     vec3 r = glm::normalize(distance);
     float radius = glm::length(distance);
+
+	Intersection ci;
+	vec3 dir = glm::normalize(i.position - lightPos);
+
+	if (ClosestIntersection(lightPos, dir, triangles, ci)) {
+		if (ci.triangleIndex != i.triangleIndex && ci.distance < radius)
+			return vec3(0, 0, 0);
+	}
 
     vec3 n = triangles[i.triangleIndex].normal;
 
