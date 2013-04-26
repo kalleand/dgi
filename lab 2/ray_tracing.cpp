@@ -22,11 +22,11 @@ const float VELOCITY = 0.001f;
 SDL_Surface* screen;
 std::vector<Triangle> triangles;
 int ti;
-float focal_length = SCREEN_HEIGHT / 1.75f;
+float focal_length = SCREEN_HEIGHT / 1.5f;
 vec3 camera_position(0, 0.25f, -1.5);
 
 vec3 indirectLight = vec3( 0.2f, 0.2f, 0.2f );
-float yawDelta = 0.00052371f;
+float yawDelta = 0.0007371f;
 float yaw = 0.0f;
 mat3 R;
 
