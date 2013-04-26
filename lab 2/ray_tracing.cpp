@@ -46,18 +46,18 @@ bool ClosestIntersection(
 
 void updateR();
 
-int main( int argc, char* argv[]) {
+int main(int argc, char* argv[]) {
     screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT);
     ti = SDL_GetTicks(); // Set start value for timer.
     LoadTestModel(triangles);
 	updateR();
 
-    while( NoQuitMessageSDL()) {
+    while (NoQuitMessageSDL()) {
         Update();
         Draw();
     }
 
-    SDL_SaveBMP( screen, "screenshot.bmp");
+    SDL_SaveBMP(screen, "screenshot.bmp");
     return 0;
 }
 
@@ -68,20 +68,23 @@ void Update() {
     ti = t2;
     std::cout << "Render time: " << dt << " ms." << std::endl;
     Uint8* keystate = SDL_GetKeyState( 0);
+
+	vec3 forward(R[2][0], R[2][1], R[2][2]);
+
     if (keystate[SDLK_UP]) {
-        camera_position.z += 0.001f * dt;
+        camera_position += forward * 0.001f * dt;
     }
-    if (keystate[SDLK_DOWN])
-    {
-        camera_position.z -= 0.001f * dt;
+
+    if (keystate[SDLK_DOWN]) {
+        camera_position -= forward * 0.001f * dt;
     }
-    if (keystate[SDLK_LEFT])
-    {
+
+    if (keystate[SDLK_LEFT]) {
 		yaw -= yawDelta * dt;
 		updateR();
     }
-    if (keystate[SDLK_RIGHT])
-    {
+
+    if (keystate[SDLK_RIGHT]) {
 		yaw += yawDelta * dt;
 		updateR();
     }
