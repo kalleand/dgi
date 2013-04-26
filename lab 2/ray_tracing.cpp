@@ -106,6 +106,12 @@ void Update() {
     if (keystate[SDLK_d]) {
         lightPos.x += VELOCITY * dt;
     }
+    if (keystate[SDLK_q]) {
+        lightPos.y -= VELOCITY * dt;
+    }
+    if (keystate[SDLK_e]) {
+        lightPos.y += VELOCITY * dt;
+    }
 }
 
 void Draw() {
