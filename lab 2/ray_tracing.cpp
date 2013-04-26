@@ -5,9 +5,12 @@
 #include "TestModel.h"
 #include <omp.h>
 #include <cmath>
+#include <algorithm>
 
 using glm::vec3;
 using glm::mat3;
+
+constexpr double pi() { return atan(1) / 4; }
 
 // ----------------------------------------------------------------------------
 // GLOBAL VARIABLES
@@ -26,6 +29,9 @@ float yawDelta = 0.00052371f;
 float yaw = 0.0f;
 mat3 R;
 
+vec3 lightPos(0, -0.5, -0.7);
+vec3 lightColor = 7.f * vec3(1, 1, 1);
+
 // ----------------------------------------------------------------------------
 // FUNCTIONS
 
@@ -42,7 +48,7 @@ bool ClosestIntersection(
         const vec3& dir,
         const std::vector<Triangle>& triangles,
         Intersection& closestIntersection);
-
+vec3 DirectLight(const Intersection& i);
 
 void updateR();
 
@@ -104,7 +110,8 @@ void Draw() {
 
             vec3 color(0, 0, 0);
             if (ClosestIntersection(camera_position, dir, triangles, intersection)) {
-                color = triangles[intersection.triangleIndex].color;
+                //color = triangles[intersection.triangleIndex].color;
+				color = DirectLight(intersection);
             }
 
             PutPixelSDL(screen, x, y, color);
@@ -121,6 +128,18 @@ void updateR() {
 	R = mat3(cos(yaw), 0, -sin(yaw),
 	                0, 1,         0,
 	         sin(yaw), 0,  cos(yaw));
+}
+
+vec3 DirectLight(const Intersection & i) {
+	vec3 distance = lightPos - i.position;
+	vec3 r = glm::normalize(distance);
+	float radius = glm::length(distance);
+
+	vec3 n = triangles[i.triangleIndex].normal;
+
+	float scalar = glm::dot(r, n);
+	float divisor = 4 * pi() * radius * radius;
+	return lightColor * std::max(scalar, 0.0f) * (1.0f / divisor);
 }
 
 bool ClosestIntersection(
