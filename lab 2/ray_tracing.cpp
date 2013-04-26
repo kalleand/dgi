@@ -145,9 +145,9 @@ void Draw() {
 }
 
 void updateR() {
-    R = mat3(cos(yaw), 0, -sin(yaw),
-            0, 1,         0,
-            sin(yaw), 0,  cos(yaw));
+	R = mat3(cos(yaw), 0, -sin(yaw),
+	                0, 1,         0,
+	         sin(yaw), 0,  cos(yaw));
 }
 
 vec3 DirectLight(const Intersection & i) {
