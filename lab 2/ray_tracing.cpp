@@ -14,6 +14,8 @@ using glm::mat3;
 
 const int SCREEN_WIDTH = 100;
 const int SCREEN_HEIGHT = 100;
+const float VELOCITY = 0.1f;
+
 SDL_Surface* screen;
 std::vector<Triangle> triangles;
 int ti;
@@ -66,8 +68,7 @@ void Update() {
     ti = t2;
     std::cout << "Render time: " << dt << " ms." << std::endl;
     Uint8* keystate = SDL_GetKeyState( 0);
-    if (keystate[SDLK_UP])
-    {
+    if (keystate[SDLK_UP]) {
         camera_position.z += 0.001f * dt;
     }
     if (keystate[SDLK_DOWN])
@@ -90,7 +91,7 @@ void Draw() {
     if (SDL_MUSTLOCK(screen))
         SDL_LockSurface(screen);
 
-    #pragma omp parallel for
+#pragma omp parallel for
     for (int y = 0; y < SCREEN_HEIGHT; ++y) {
 	    Intersection intersection;
 
@@ -127,7 +128,7 @@ bool ClosestIntersection(
     float current_min = std::numeric_limits<float>::max();
     bool found_triangle = false;
 
-	vec3 x;
+    vec3 x;
     float & t = x.x;
     float & u = x.y;
     float & v = x.z;
