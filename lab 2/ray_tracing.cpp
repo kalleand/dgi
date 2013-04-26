@@ -4,6 +4,7 @@
 #include "SDLauxiliary.h"
 #include "TestModel.h"
 #include <omp.h>
+#include <cmath>
 
 using glm::vec3;
 using glm::mat3;
@@ -11,20 +12,22 @@ using glm::mat3;
 // ----------------------------------------------------------------------------
 // GLOBAL VARIABLES
 
-const int SCREEN_WIDTH = 500;
-const int SCREEN_HEIGHT = 500;
+const int SCREEN_WIDTH = 100;
+const int SCREEN_HEIGHT = 100;
 SDL_Surface* screen;
 std::vector<Triangle> triangles;
 int ti;
-float focal_length = SCREEN_HEIGHT / 2;
+float focal_length = SCREEN_WIDTH / 1.75f;
 vec3 camera_position(0, 0, -2);
 
+float yawDelta = 0.00052371f;
+float yaw = 0.0f;
+mat3 R;
 
 // ----------------------------------------------------------------------------
 // FUNCTIONS
 
-struct Intersection
-{
+struct Intersection {
     vec3 position;
     float distance;
     int triangleIndex;
@@ -39,45 +42,47 @@ bool ClosestIntersection(
         Intersection& closestIntersection);
 
 
-int main( int argc, char* argv[] )
-{
-    screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT );
+void updateR();
+
+int main( int argc, char* argv[]) {
+    screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT);
     ti = SDL_GetTicks(); // Set start value for timer.
     LoadTestModel(triangles);
+	updateR();
 
-    while( NoQuitMessageSDL() )
-    {
+    while( NoQuitMessageSDL()) {
         Update();
         Draw();
     }
 
-    SDL_SaveBMP( screen, "screenshot.bmp" );
+    SDL_SaveBMP( screen, "screenshot.bmp");
     return 0;
 }
 
-void Update()
-{
+void Update() {
     // Compute frame time:
     int t2 = SDL_GetTicks();
     float dt = float(t2-ti);
     ti = t2;
     std::cout << "Render time: " << dt << " ms." << std::endl;
-    Uint8* keystate = SDL_GetKeyState( 0 );
-    if( keystate[SDLK_UP] )
+    Uint8* keystate = SDL_GetKeyState( 0);
+    if (keystate[SDLK_UP])
     {
-        camera_position.z += 0.1f;
+        camera_position.z += 0.001f * dt;
     }
-    if( keystate[SDLK_DOWN] )
+    if (keystate[SDLK_DOWN])
     {
-        camera_position.z -= 0.1f;
+        camera_position.z -= 0.001f * dt;
     }
-    if( keystate[SDLK_LEFT] )
+    if (keystate[SDLK_LEFT])
     {
-        camera_position.x -= 0.1f;
+		yaw -= yawDelta * dt;
+		updateR();
     }
-    if( keystate[SDLK_RIGHT] )
+    if (keystate[SDLK_RIGHT])
     {
-        camera_position.x += 0.1f;
+		yaw += yawDelta * dt;
+		updateR();
     }
 }
 
@@ -88,10 +93,10 @@ void Draw() {
     #pragma omp parallel for
     for (int y = 0; y < SCREEN_HEIGHT; ++y) {
 	    Intersection intersection;
-		vec3 dir(0, y - SCREEN_HEIGHT / 2, focal_length);
 
         for (int x = 0; x < SCREEN_WIDTH; ++x) {
-            dir.x = x - SCREEN_WIDTH / 2;
+			vec3 dir(x - SCREEN_WIDTH / 2, y - SCREEN_HEIGHT / 2, focal_length);
+			dir = R * dir;
 
             vec3 color(0, 0, 0);
             if (ClosestIntersection(camera_position, dir, triangles, intersection)) {
@@ -108,12 +113,17 @@ void Draw() {
     SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
 
+void updateR() {
+	R = mat3(cos(yaw), 0, -sin(yaw),
+	                0, 1,         0,
+	         sin(yaw), 0,  cos(yaw));
+}
+
 bool ClosestIntersection(
         const vec3& start,
         const vec3& dir,
         const std::vector<Triangle>& triangles,
-        Intersection & closestIntersection)
-{
+        Intersection & closestIntersection) {
     float current_min = std::numeric_limits<float>::max();
     bool found_triangle = false;
 
