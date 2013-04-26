@@ -15,8 +15,8 @@ constexpr double pi() { return atan(1) / 4; }
 // ----------------------------------------------------------------------------
 // GLOBAL VARIABLES
 
-const int SCREEN_WIDTH = 192;
-const int SCREEN_HEIGHT = 108;
+const int SCREEN_WIDTH = 1280;
+const int SCREEN_HEIGHT = 720;
 const float VELOCITY = 0.001f;
 
 SDL_Surface* screen;

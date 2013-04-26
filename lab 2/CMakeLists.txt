@@ -1,6 +1,6 @@
 # Top-Level CMakeList.txt
 
-SET(CMAKE_CXX_FLAGS "-std=c++0x")
+SET(CMAKE_CXX_FLAGS "-O3 -std=c++0x")
 
 cmake_minimum_required (VERSION 2.6)
 project ( RayTracing )
