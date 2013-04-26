@@ -18,6 +18,7 @@ constexpr double pi() { return atan(1) / 4; }
 const int SCREEN_WIDTH = 1280;
 const int SCREEN_HEIGHT = 720;
 const float VELOCITY = 0.001f;
+const float EPSILON = 0.00001f;
 
 SDL_Surface* screen;
 std::vector<Triangle> triangles;
@@ -158,7 +159,7 @@ vec3 DirectLight(const Intersection & i) {
     vec3 dir = glm::normalize(i.position - lightPos);
 
     if (ClosestIntersection(lightPos, dir, triangles, ci)) {
-        if (ci.triangleIndex != i.triangleIndex && ci.distance < radius)
+        if (ci.distance < radius - EPSILON)
             return vec3(0, 0, 0);
     }
 
