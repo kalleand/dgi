@@ -15,16 +15,17 @@ constexpr double pi() { return atan(1) / 4; }
 // ----------------------------------------------------------------------------
 // GLOBAL VARIABLES
 
-const int SCREEN_WIDTH = 100;
-const int SCREEN_HEIGHT = 100;
+const int SCREEN_WIDTH = 192;
+const int SCREEN_HEIGHT = 108;
 const float VELOCITY = 0.001f;
 
 SDL_Surface* screen;
 std::vector<Triangle> triangles;
 int ti;
-float focal_length = SCREEN_WIDTH / 1.75f;
-vec3 camera_position(0, 0, -2);
+float focal_length = SCREEN_HEIGHT / 1.75f;
+vec3 camera_position(0, 0.25f, -1.5);
 
+vec3 indirectLight = vec3( 0.2f, 0.2f, 0.2f );
 float yawDelta = 0.00052371f;
 float yaw = 0.0f;
 mat3 R;
@@ -128,8 +129,8 @@ void Draw() {
 
             vec3 color(0, 0, 0);
             if (ClosestIntersection(camera_position, dir, triangles, intersection)) {
-				color = triangles[intersection.triangleIndex].color;
-                color *= DirectLight(intersection);
+                color = triangles[intersection.triangleIndex].color;
+                color *= (DirectLight(intersection) + indirectLight);
             }
 
             PutPixelSDL(screen, x, y, color);
@@ -153,13 +154,13 @@ vec3 DirectLight(const Intersection & i) {
     vec3 r = glm::normalize(distance);
     float radius = glm::length(distance);
 
-	Intersection ci;
-	vec3 dir = glm::normalize(i.position - lightPos);
+    Intersection ci;
+    vec3 dir = glm::normalize(i.position - lightPos);
 
-	if (ClosestIntersection(lightPos, dir, triangles, ci)) {
-		if (ci.triangleIndex != i.triangleIndex && ci.distance < radius)
-			return vec3(0, 0, 0);
-	}
+    if (ClosestIntersection(lightPos, dir, triangles, ci)) {
+        if (ci.triangleIndex != i.triangleIndex && ci.distance < radius)
+            return vec3(0, 0, 0);
+    }
 
     vec3 n = triangles[i.triangleIndex].normal;
 
