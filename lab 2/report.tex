@@ -1,0 +1,61 @@
+\documentclass[a4]{article}
+
+\usepackage[utf8]{inputenc}
+\usepackage{graphicx}
+\usepackage{subfig}
+
+\begin{document}
+
+
+\title{Lab 2: Raytracing}
+
+\author{Karl Johan Andreasson \and Erik Fahlén}
+
+\maketitle
+
+\section{Introduction}
+Computer graphics using raytracing is a common way of drawing very realistic and
+pretty images using computers. However, it is not very useful for creating these
+images in real time. To be able to create an image using raytracing in real time
+requires some smart tricks and overall clever coding.
+
+Raytracing is the process of shooting rays of and trace this path that the rays
+travel and from this receive a very realistic looking image of the scene that is
+to be rendered.
+
+\section{Implementation method}
+Implementing the raytracer of the scene given to us we started by attacking the
+lab as described in the instructions. The instructions were well balanced in the
+process of implementing a raytracer with the background of the assignment and
+math to back it up together with assignments to be implemented.
+
+If the first lab was a bit too easy this lab was better structured in that the
+first assignments was easier and then the difficulty increased as we progressed
+through the lab.
+\section{Discussion}
+In this lab the major problem was to really understand the math and how this
+should be implemented to make sure the raytracer is as fast as possible to try
+to make it work in real time.
+
+We had some problems when trying to find the closest intersecting triangle. We
+used the function vec3::length however this did not return the euclidean
+distance but something else. The function that we ended up using was
+glm::distance. This was according to our experience badly documented and we
+basically had to guess what functions that were available to use. Acctually a
+lot of the implementation time was used trying to figure out this very problem.
+
+When the lab was completed we tried to make it faster as to render one frame
+using a screen resolution of 1280x720 up to 23.5 seconds. We played around with
+various optimization attempts and profiling of the code. We realized quickly
+that the major bottleneck in the program was calculating the inverse of the
+matrix to get the intersection of the ray and the triangle looked at currently.
+We use the function glm::inverse to calculate this inverse hence we could not
+optimize this any further without writing our own matrix inverse function. We
+then discovered that the optimization flag O3 in g++ would provide an incredible
+speedup and the same fram with a resolution of 1280x720 would now take around 0.5
+seconds.
+
+\section{Result}
+The resulting raytracer works really well on our machines, escpecially once the
+optimisation flag was set during compiling of the code. 
+\end{document}
