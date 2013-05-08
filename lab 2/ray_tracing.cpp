@@ -96,21 +96,27 @@ void Update() {
         yaw += yawDelta * dt;
         updateR();
     }
+
     if (keystate[SDLK_w]) {
         lightPos.z += VELOCITY * dt;
     }
+
     if (keystate[SDLK_s]) {
         lightPos.z -= VELOCITY * dt;
     }
+
     if (keystate[SDLK_a]) {
         lightPos.x -= VELOCITY * dt;
     }
+
     if (keystate[SDLK_d]) {
         lightPos.x += VELOCITY * dt;
     }
+
     if (keystate[SDLK_q]) {
         lightPos.y -= VELOCITY * dt;
     }
+
     if (keystate[SDLK_e]) {
         lightPos.y += VELOCITY * dt;
     }
