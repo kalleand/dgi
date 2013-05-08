@@ -23,3 +23,10 @@ glm/
 
 # Program output dumps
 */screenshot.bmp
+
+# LaTeX files
+*.aux
+*.log
+*.pdf
+*.toc
+*~
