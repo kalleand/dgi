@@ -23,15 +23,38 @@ Raytracing is the process of shooting rays of and trace this path that the rays
 travel and from this receive a very realistic looking image of the scene that is
 to be rendered.
 
+In this lab a scene constructed of a room with three walls, roof, floor and two
+cubes all in different colors is drawn as seen in figure TODO!. Then shadowing
+is implemented using the same manner; shooting rays from the lightsource and
+discovering if the point is hidden (i.e. shadowed) or not.
+
 \section{Implementation method}
+In contrast to how we implemented the first lab where we worked individually and
+then merged the two implementations into one, in this lab we worked together
+throughout the implementing the lab. This worked really well and we could
+discuss the implementation and math behind it and get a better understanding of
+the math behind raytracing.
+
 Implementing the raytracer of the scene given to us we started by attacking the
 lab as described in the instructions. The instructions were well balanced in the
 process of implementing a raytracer with the background of the assignment and
-math to back it up together with assignments to be implemented.
+math to back it up together with the work to be implemented.
 
 If the first lab was a bit too easy this lab was better structured in that the
 first assignments was easier and then the difficulty increased as we progressed
 through the lab.
+
+The only place where we digressed from the lab instructions were when the
+implementing of the shadows. In the lab the instructions was to shoot rays from
+the light source towards the point and discovering if the point is the closest
+intersection (and it should not be shadowed). We decided to shoot the rays from
+the point being looked at towards the light source. This was really useful for
+when the triangle intersections of the ray was really close to each other
+because the comparison between the distance to the light source which usually is
+quite a bit longer than the short distance to the other close intersection. The
+main benefit of implementing the shadowing this way was that the rounding errors
+present using floats could be ignored completely.
+
 \section{Discussion}
 In this lab the major problem was to really understand the math and how this
 should be implemented to make sure the raytracer is as fast as possible to try
@@ -57,5 +80,5 @@ seconds.
 
 \section{Result}
 The resulting raytracer works really well on our machines, escpecially once the
-optimisation flag was set during compiling of the code. 
+optimization flag was set during compiling of the code. 
 \end{document}
