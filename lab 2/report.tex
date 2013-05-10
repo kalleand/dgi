@@ -1,6 +1,7 @@
 \documentclass[a4]{article}
 
 \usepackage[utf8]{inputenc}
+\usepackage{float}
 \usepackage{graphicx}
 \usepackage{subfig}
 
@@ -12,6 +13,13 @@
 \author{Karl Johan Andreasson \and Erik Fahlén}
 
 \maketitle
+
+\begin{figure}
+    \centering
+    \includegraphics[width=10cm]{main720.png}
+    \caption{The scene rendered.}
+    \label{fig:main}
+\end{figure}
 
 \section{Introduction}
 Computer graphics using raytracing is a common way of drawing very realistic and
@@ -27,6 +35,7 @@ In this lab a scene constructed of a room with three walls, roof, floor and two
 cubes all in different colors is drawn as seen in figure TODO!. Then shadowing
 is implemented using the same manner; shooting rays from the lightsource and
 discovering if the point is hidden (i.e. shadowed) or not.
+
 
 \section{Implementation method}
 In contrast to how we implemented the first lab where we worked individually and
@@ -79,6 +88,53 @@ speedup and the same fram with a resolution of 1280x720 would now take around 0.
 seconds.
 
 \section{Result}
-The resulting raytracer works really well on our machines, escpecially once the
-optimization flag was set during compiling of the code. 
+The resulting raytracer works really well on our own machines, escpecially once
+the optimization flag was set during compiling of the code. 
+
+As demonstrated in figure \ref{fig:camera} the camera can be moved around and
+the view are as expected from a pin-hole camera.
+
+The light source can be moved around as well, as specified in the lab report. A
+demonstration of this can be seen in figure \ref{fig:light}.
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{.5\textwidth}
+        \centering
+        \includegraphics[width=4cm]{720ani0.png}
+    \end{minipage}%
+    \begin{minipage}{.5\textwidth}
+        \centering
+        \includegraphics[width=4cm]{light0.png}
+    \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{.5\textwidth}
+        \centering
+        \includegraphics[width=4cm]{720ani1.png}
+    \end{minipage}%
+    \begin{minipage}{.5\textwidth}
+        \centering
+        \includegraphics[width=4cm]{light1.png}
+    \end{minipage}
+\end{figure}
+
+\begin{figure}[H]
+    \centering
+    \begin{minipage}{.5\textwidth}
+        \centering
+        \includegraphics[width=4cm]{720ani2.png}
+        \captionof{figure}{\\Moving the camera around.}
+        \label{fig:camera}
+    \end{minipage}%
+    \begin{minipage}{.5\textwidth}
+        \centering
+        \includegraphics[width=4cm]{light2.png}
+        \captionof{figure}{\\Moving the light source around.}
+        \label{fig:light}
+    \end{minipage}
+\end{figure}
+
 \end{document}
