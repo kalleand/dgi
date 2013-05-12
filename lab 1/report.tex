@@ -4,8 +4,6 @@
 \usepackage{graphicx}
 \usepackage{subfig}
 
-\usepackage{makeidx}  % allows for indexgeneration
-
 \begin{document}
 
 \title{DH2323: Lab 1}
@@ -63,9 +61,9 @@ The result from the gradient interpolation can be seen in figure \ref{gradient_f
 You can clearly see the smooth transition between the interpolated colors.
 In the middle of the frame, all four colors blend together into a greyish color.
 
-\begin{figure}
+\begin{figure}[H]
 \begin{center}
-\includegraphics[width=200pt]{gradient.png}
+\includegraphics[width=\textwidth]{gradient.png}
 \caption{Gradient produced by interpolation}
 \label{gradient_fig}
 \end{center}
@@ -80,9 +78,9 @@ The bottom left corner is probably the place where this is most visible.
 Also not that all motion blur lines are directed out from the image.
 This really helps to sell the effect that we are moving through the star field.
 
-\begin{figure}
+\begin{figure}[H]
 \begin{center}
-\includegraphics[width=200pt]{starfield.png}
+\includegraphics[width=\textwidth]{starfield.png}
 \caption{star field with motion blur}
 \label{starfield_fig}
 \end{center}
