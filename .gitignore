@@ -28,5 +28,6 @@ glm/
 *.aux
 *.log
 *.pdf
+*.dvi
 *.toc
 *~
