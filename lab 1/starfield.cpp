@@ -68,11 +68,14 @@ int main(int argc, char * argv[]) {
 	return EXIT_SUCCESS;
 }
 
-
+// Generates a random float in the range
+// 0 ≤ x ≤ 1
 float random_float() {
 	return float(rand()) / float(RAND_MAX);
 }
 
+// Initializes the program. Creates a screen and generates
+// positions for all stars.
 void Initialize() {
 	screen = InitializeSDL(SCREEN_WIDTH, SCREEN_HEIGHT);
 
@@ -87,6 +90,8 @@ void Initialize() {
 	t = SDL_GetTicks();
 }
 
+// Updates the game. This should be called in a loop, at least 30 times
+// per second, to get a smooth star field.
 void Update() {
 	int t2 = SDL_GetTicks();
 	float dt = float(t2 - t);
@@ -98,6 +103,8 @@ void Update() {
 		previousStars[i] = stars[i];
 		stars[i] += dt * velocity;
 
+		// If the star is behind the camera, wrap it around and generate
+		// a new (x, y) position for it to give the star field some variation
 		if (stars[i].z <= 0) {
 			stars[i].z += 1;
 			stars[i].x = -1 + 2 * random_float();
@@ -108,10 +115,13 @@ void Update() {
 	}
 }
 
+// This function will draw a line between the screen-points (fromU, fromV)
+// and (toU, toV).
 void drawLine(float fromU, float fromV, float toU, float toV, vec3 color) {
 	vec2 start(fromU, fromV);
 	vec2 delta(toU - fromU, toV - fromV);
 
+	// Fix clipping to the left at the start of the line
 	if (fromU < 0) {
 		if (delta.x == 0.0f) return;
 
@@ -120,6 +130,7 @@ void drawLine(float fromU, float fromV, float toU, float toV, vec3 color) {
 		return drawLine(fromU, fromV, toU, toV, color);
 	}
 
+	// Fix clipping to the right at the start of the line
 	if (fromU > SCREEN_WIDTH) {
 		if (delta.x == 0.0f) return;
 
@@ -128,6 +139,7 @@ void drawLine(float fromU, float fromV, float toU, float toV, vec3 color) {
 		return drawLine(fromU, fromV, toU, toV, color);
 	}
 
+	// Fix clipping to the left at the end of the line
 	if (toU < 0) {
 		if (delta.x == 0.0f) return;
 
@@ -136,6 +148,7 @@ void drawLine(float fromU, float fromV, float toU, float toV, vec3 color) {
 		return drawLine(fromU, fromV, toU, toV, color);
 	}
 
+	// Fix clipping to the right at the end of the line
 	if (toU > SCREEN_WIDTH) {
 		if (delta.x == 0.0f) return;
 
@@ -144,6 +157,7 @@ void drawLine(float fromU, float fromV, float toU, float toV, vec3 color) {
 		return drawLine(fromU, fromV, toU, toV, color);
 	}
 
+	// Fix clipping to the top at the start of the line
 	if (fromV < 0) {
 		if (delta.y == 0.0f) return;
 
@@ -152,6 +166,7 @@ void drawLine(float fromU, float fromV, float toU, float toV, vec3 color) {
 		return drawLine(fromU, fromV, toU, toV, color);
 	}
 
+	// Fix clipping to the bottom at the start of the line
 	if (fromV > SCREEN_HEIGHT) {
 		if (delta.y == 0.0f) return;
 
@@ -160,6 +175,7 @@ void drawLine(float fromU, float fromV, float toU, float toV, vec3 color) {
 		return drawLine(fromU, fromV, toU, toV, color);
 	}
 
+	// Fix clipping to the top at the end of the line
 	if (toV < 0) {
 		if (delta.y == 0.0f) return;
 
@@ -168,6 +184,7 @@ void drawLine(float fromU, float fromV, float toU, float toV, vec3 color) {
 		return drawLine(fromU, fromV, toU, toV, color);
 	}
 
+	// Fix clipping to the bottom at the end of the line
 	if (toV > SCREEN_HEIGHT) {
 		if (delta.y == 0.0f) return;
 
@@ -179,10 +196,12 @@ void drawLine(float fromU, float fromV, float toU, float toV, vec3 color) {
 	vec2 step = glm :: normalize(delta);
 	int steps = ceil(glm :: length(delta));
 
+	// Finally, do a number of steps of pixel length 1 to fill in the line
 	for (vec2 v = start; steps > 0; v += step, --steps)
 		PutPixelSDL(screen, v.x, v.y, color);
 }
 
+// Draw one frame of the star field.
 void Draw() {
 	float f = SCREEN_HEIGHT / 4;
 
@@ -191,13 +210,16 @@ void Draw() {
 		SDL_LockSurface(screen);
 
 	for (int i = 0; i < stars.size(); ++i) {
+		// Project positions to the screen
 		float fromU = f * previousStars[i].x / previousStars[i].z + SCREEN_WIDTH / 2;
 		float fromV = f * previousStars[i].y / previousStars[i].z + SCREEN_HEIGHT / 2;
 		float toU = f * stars[i].x / stars[i].z + SCREEN_WIDTH / 2;
 		float toV = f * stars[i].y / stars[i].z + SCREEN_HEIGHT / 2;
 
+		// Adjust the brightness from the distance to the camera
 		vec3 color = vec3(0.2f) / (stars[i].z * stars[i].z);
 
+		// Draw a line for the star
 		drawLine(fromU, fromV, toU, toV, color);
 	}
 
