@@ -43,17 +43,20 @@ int main(int argc, char * argv[]) {
 	return EXIT_SUCCESS;
 }
 
+// Draw one gradient frame.
 void Draw() {
 	vec3 topLeft(1, 0, 0); // red
 	vec3 topRight(0, 0, 1); // blue
 	vec3 bottomLeft(0, 1, 0); // green
 	vec3 bottomRight(1, 1, 0); // yellow
 
+	// Interpolate the left and right side of the screen
 	vector<vec3> leftSide(SCREEN_HEIGHT);
 	vector<vec3> rightSide(SCREEN_HEIGHT);
 	Interpolate(topLeft, bottomLeft, leftSide);
 	Interpolate(topRight, bottomRight, rightSide);
 
+	// Interpolate each row
 	for (int y = 0; y < SCREEN_HEIGHT; ++y) {
 		vector<vec3> rowColors(SCREEN_WIDTH);
 		Interpolate(leftSide[y], rightSide[y], rowColors);
@@ -77,7 +80,7 @@ void Interpolate(const T & a, const T & b, vector<T> & result) {
 		if (result.size() == 0) return;
 
 		// Only one point is needed
-		result[0] = a;
+		result[0] = 0.5f * (a + b);
 		return;
 	}
 
