@@ -51,6 +51,7 @@ We had to research line-drawing algorithms, which turned out to be quite extensi
 The algorithm that we ended up using were actually a composition of our own.
 While it is probably not the most efficient algorithm, it is quite elegant from a mathematical point of view.
 It works by calculating a normalized direction vector for the line and stepping with it to fill in the required pixels.
+The line is also clipped where the screen ends to not drop performance.
 
 We also discovered that these line actually did not look good at high frame rates.
 Because the star moved such a short distance for each frame, the blur effect was barely visible.
@@ -58,14 +59,32 @@ We solved this by simply limiting the frames per second to 30.
 This also has the benefit that the application is not as heavy for the CPU, since it can sleep for a while after drawing each frame.
 
 \section{Results}
+The result from the gradient interpolation can be seen in figure \ref{gradient_fig}.
+You can clearly see the smooth transition between the interpolated colors.
+In the middle of the frame, all four colors blend together into a greyish color.
 
 \begin{figure}
-\includegraphics[width=150pt]{gradient.png}
+\begin{center}
+\includegraphics[width=200pt]{gradient.png}
 \caption{Gradient produced by interpolation}
+\label{gradient_fig}
+\end{center}
 \end{figure}
 
+The star field is shown in figure \ref{starfield_fig}.
+There are a few more things to say about the star field.
+First of all, note that the screenshot shown here does not quite do the animation justice, obviously.
+You can see some of the motion blur in the edges.
+These are the stars that are closest to the camera, which is way they have the longest blur lines.
+The bottom left corner is probably the place where this is most visible.
+Also not that all motion blur lines are directed out from the image.
+This really helps to sell the effect that we are moving through the star field.
+
 \begin{figure}
-\includegraphics[width=150pt]{starfield.png}
+\begin{center}
+\includegraphics[width=200pt]{starfield.png}
 \caption{star field with motion blur}
+\label{starfield_fig}
+\end{center}
 \end{figure}
 \end{document}
