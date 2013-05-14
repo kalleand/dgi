@@ -3,11 +3,13 @@
 #include <SDL.h>
 #include "SDLauxiliary.h"
 #include "TestModel.h"
-#include "../lab 1/interpolate.h"
+#include <vector>
 
 using glm::vec3;
+using glm::vec2;
 using glm::ivec2;
 using glm::mat3;
+using std::vector;
 
 // GLOBAL VARIABLES
 
@@ -22,7 +24,9 @@ float yaw = 0.0f;
 
 // FUNCTIONS
 
+void Interpolate(ivec2 a, ivec2 b, std::vector<ivec2> & result);
 void VertexShader(const vec3 & v, ivec2 & p);
+void DrawLineSDL(SDL_Surface * surface, ivec2 a, ivec2 b, vec3 color);
 void Update();
 void Draw();
 void UpdateR();
@@ -118,8 +122,17 @@ void Draw()
     SDL_UpdateRect( screen, 0, 0, 0, 0 );
 }
 
-void VertexShader(const vec3 & v, ivec2 & p)
-{
+void Interpolate(ivec2 a, ivec2 b, std::vector<ivec2> & result) {
+	int N = result.size();
+	vec2 step = vec2(b - a) / float(glm::max(N - 1, 1));
+	vec2 current( a );
+	for (int i = 0; i < N; ++i) {
+		result[i] = current;
+		current += step;
+	}
+}
+
+void VertexShader(const vec3 & v, ivec2 & p) {
     vec3 p_prim = (v - camera_pos) * R;
     float f = 500.0f;
     printf("%f,%f,%f\n", v.x, v.y, v.z);
@@ -129,9 +142,19 @@ void VertexShader(const vec3 & v, ivec2 & p)
     return;
 }
 
-void UpdateR()
-{
-    R = mat3(cos(yaw), 0, -sin(yaw),
-            0, 1, 0,
-        sin(yaw), 0, cos(yaw));
+void DrawLineSDL(SDL_Surface * surface, ivec2 a, ivec2 b, vec3 color) {
+	ivec2 delta = glm::abs(a - b);
+	int pixels = glm::max(delta.x, delta.y) + 1;
+	vector<ivec2> line(pixels);
+	Interpolate(a, b, line);
+
+	for (auto it = line.begin(); it != line.end(); ++it) {
+		PutPixelSDL(surface, (*it).x, (*it).y, color);
+	}
+}
+
+void UpdateR() {
+	R = mat3(cos(yaw), 0, -sin(yaw),               
+	                0, 1,         0,
+	         sin(yaw), 0,  cos(yaw));
 }

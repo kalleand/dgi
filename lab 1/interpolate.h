@@ -28,5 +28,4 @@ void Interpolate(const T & a, const T & b, std::vector<T> & result) {
 		value += step;
 	}
 }
-
 #endif
