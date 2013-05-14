@@ -156,7 +156,6 @@ void Interpolate(ivec2 a, ivec2 b, std::vector<ivec2> & result) {
 void VertexShader(const vec3 & v, ivec2 & p) {
     vec3 p_prim = (v - camera_position) * R;
     float f = 500.0f;
-    printf("%f,%f,%f\n", v.x, v.y, v.z);
     p.x = f * p_prim.x / p_prim.z + SCREEN_WIDTH / 2;
     p.y = f * p_prim.y / p_prim.z + SCREEN_HEIGHT / 2;
 
