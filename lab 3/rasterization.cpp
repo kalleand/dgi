@@ -126,15 +126,15 @@ void Draw()
     if (SDL_MUSTLOCK(screen))
         SDL_LockSurface(screen);
 
-    for (int i = 0; i < triangles.size(); ++i)
-    {
-        std::vector<vec3> vertices(3);
+    for (int i = 0; i < triangles.size(); ++i) {
+    	current_color = triangles[i].color;
 
+        std::vector<vec3> vertices(3);
         vertices[0] = triangles[i].v0;
         vertices[1] = triangles[i].v1;
         vertices[2] = triangles[i].v2;
 
-        DrawPolygonEdges(vertices);
+        DrawPolygon(vertices);
     }
 
     if (SDL_MUSTLOCK(screen))
@@ -201,26 +201,23 @@ void ComputePolygonRows(const vector<ivec2> & vertexPixels,
 
 	for (auto it = vertexPixels.begin(); it != vertexPixels.end(); ++it) {
 		min_y = glm::min(min_y, (*it).y);
-		max_y = glm::max(max_y, (*it).x);
+		max_y = glm::max(max_y, (*it).y);
 	}
 
-	int num_rows = max_y - min_y + 1;
 	// 2. Resize leftPixels and rightPixels
 	// so that they have an element for each row.
-	leftPixels.resize(num_rows);
-	rightPixels.resize(num_rows);
+	leftPixels.resize(SCREEN_HEIGHT);
+	rightPixels.resize(SCREEN_HEIGHT);
 
 	// 3. Initialize the x-coordinates in leftPixels
 	// to some really large value and the x-coordinates
 	// in rightPixels to some really small value.
 	for (int i = 0; i < leftPixels.size(); ++i) {
-		leftPixels[i].x = numeric_limits<int>::max();
-		leftPixels[i].y = min_y + i;
-	}
+		leftPixels[i].x = SCREEN_WIDTH;
+		leftPixels[i].y = i;
 
-	for (int i = 0; i < rightPixels.size(); ++i) {
-		rightPixels[i].x = numeric_limits<int>::min();
-		rightPixels[i].y = min_y + i;
+		rightPixels[i].x = 0;
+		rightPixels[i].y = i;
 	}
 
 	// 4. Loop through all edges of the polygon and use
@@ -236,11 +233,9 @@ void ComputePolygonRows(const vector<ivec2> & vertexPixels,
 		Interpolate(vertexPixels[i], vertexPixels[j], line);
 
 		for (auto it = line.begin(); it != line.end(); ++it) {
-			ivec2 & left = leftPixels[(*it).y - min_y];
-			left.x = glm::min(left.x, (*it).x);
-
-			ivec2 & right = rightPixels[(*it).y - min_y];
-			right.x = glm::max(right.x, (*it).x);
+			int k = (*it).y;
+			leftPixels[k].x = glm::min(leftPixels[k].x, (*it).x);
+			rightPixels[k].x = glm::max(rightPixels[k].x, (*it).x);
 		}
 	}
 }
@@ -250,7 +245,7 @@ void DrawPolygonRows(const vector<ivec2> & leftPixels,
 	for (int i = 0; i < leftPixels.size(); ++i) {
 		int y = leftPixels[i].y;
 
-		for (int x = leftPixels[i].x; x < rightPixels[i].x; ++x) {
+		for (int x = leftPixels[i].x; x <= rightPixels[i].x; ++x) {
 			PutPixelSDL(screen, x, y, current_color);
 		}
 	}
@@ -266,7 +261,6 @@ void DrawPolygon(const vector<vec3> & vertices) {
 	vector<ivec2> leftPixels;
 	vector<ivec2> rightPixels;
 	ComputePolygonRows(vertexPixels, leftPixels, rightPixels);
-
 	DrawPolygonRows(leftPixels, rightPixels);
 }
 
