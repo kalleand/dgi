@@ -18,9 +18,11 @@ const int SCREEN_HEIGHT = 500;
 SDL_Surface* screen;
 int t;
 std::vector<Triangle> triangles;
-vec3 camera_pos(0, 0, -3.001);
+vec3 camera_position(0, 0, -3.001);
 mat3 R;
+const float VELOCITY = 0.001f;
 float yaw = 0.0f;
+float yawDelta = 0.0007371f;
 
 // FUNCTIONS
 
@@ -53,19 +55,33 @@ void Update() {
     t = t2;
     std::cout << "Render time: " << dt << " ms." << std::endl;
 
+    // Find out pressed keys.
     Uint8* keystate = SDL_GetKeyState(0);
 
-    if (keystate[SDLK_UP])
-        ;
+    // Determine what direction forward is.
+    vec3 forward(R[2][0], R[2][1], R[2][2]);
 
-    if (keystate[SDLK_DOWN])
-        ;
+	// Forwards.
+    if (keystate[SDLK_UP]) {
+        camera_position += forward * VELOCITY * dt;
+    }
 
-    if (keystate[SDLK_RIGHT])
-        ;
+    // Backwards.
+    if (keystate[SDLK_DOWN]) {
+        camera_position -= forward * VELOCITY * dt;
+    }
 
-    if (keystate[SDLK_LEFT])
-        ;
+    // Turn left.
+    if (keystate[SDLK_LEFT]) {
+        yaw -= yawDelta * dt;
+        UpdateR();
+    }
+
+    // Turn right.
+    if (keystate[SDLK_RIGHT]) {
+        yaw += yawDelta * dt;
+        UpdateR();
+    }
 
     if (keystate[SDLK_RSHIFT])
         ;
@@ -128,7 +144,7 @@ void Interpolate(ivec2 a, ivec2 b, std::vector<ivec2> & result) {
 }
 
 void VertexShader(const vec3 & v, ivec2 & p) {
-    vec3 p_prim = (v - camera_pos) * R;
+    vec3 p_prim = (v - camera_position) * R;
     float f = 500.0f;
     printf("%f,%f,%f\n", v.x, v.y, v.z);
     p.x = f * p_prim.x / p_prim.z + SCREEN_WIDTH / 2;
