@@ -10,7 +10,7 @@ ADD_LIBRARY(Timer SHARED timer.c)
 
 add_executable(Gradient gradient.cpp)
 
-add_executable(StarField timer.c starfield.cpp)
+add_executable(StarField starfield.cpp)
 
 find_package (SDL)
 
@@ -23,8 +23,8 @@ if(SDL_FOUND)
 		${SDL_INCLUDE_DIR}
 		${PROJECT_SOURCE_DIR}/../glm
 	)
-	#link_libraries(${SDL_LIBRARY})
+
 	target_link_libraries(Gradient ${SDL_LIBRARY})
-	target_link_libraries(StarField ${SDL_LIBRARY})
+	target_link_libraries(StarField ${SDL_LIBRARY} Timer)
 endif(SDL_FOUND)
 

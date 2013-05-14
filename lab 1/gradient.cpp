@@ -13,6 +13,7 @@
 #include <glm/glm.hpp>
 #include <vector>
 #include "SDLauxiliary.h"
+#include "interpolate.h"
 
 using std :: vector;
 using glm :: vec3;
@@ -28,8 +29,6 @@ SDL_Surface * screen;
 // FUNCTION DECLARATIONS
 
 void Draw();
-template<typename T>
-void Interpolate(const T & a, const T & b, vector<T> & result);
 
 // --------------------------------------------------------
 // FUNCTION DEFINITIONS
@@ -70,30 +69,4 @@ void Draw() {
 		SDL_UnlockSurface(screen);
 
 	SDL_UpdateRect(screen, 0, 0, 0, 0);
-}
-
-template<typename T>
-void Interpolate(const T & a, const T & b, vector<T> & result) {
-	// If we have one point or less, we need special treatement
-	if (1 >= result.size()) {
-		// If we should interpolate no point, do nothing
-		if (result.size() == 0) return;
-
-		// Only one point is needed
-		result[0] = 0.5f * (a + b);
-		return;
-	}
-
-	// Calculate how far every step will go
-	T step = (b - a) * (1.0f / (result.size() - 1));
-
-	// Setup the value to assign
-	T value = a;
-
-	// Loop through the result
-	for (auto it = result.begin(); it != result.end(); ++it) {
-		// Assign the value and increase it by the step
-		*it = value;
-		value += step;
-	}
 }

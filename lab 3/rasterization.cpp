@@ -3,6 +3,7 @@
 #include <SDL.h>
 #include "SDLauxiliary.h"
 #include "TestModel.h"
+#include "../lab 1/interpolate.h"
 
 using glm::vec3;
 using glm::ivec2;
