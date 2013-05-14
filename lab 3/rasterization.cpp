@@ -39,6 +39,7 @@ void ComputePolygonRows(const vector<ivec2> & vertexPixels,
                         vector<ivec2> & rightPixels);
 void DrawPolygonRows(const vector<ivec2> & leftPixels,
                      const vector<ivec2> & rightPixels);
+void DrawPolygon(const vector<vec3> & vertices);
 void Update();
 void Draw();
 void UpdateR();
@@ -253,6 +254,20 @@ void DrawPolygonRows(const vector<ivec2> & leftPixels,
 			PutPixelSDL(screen, x, y, current_color);
 		}
 	}
+}
+
+void DrawPolygon(const vector<vec3> & vertices) {
+	vector<ivec2> vertexPixels(vertices.size());
+
+	for (int i = 0; i < vertices.size(); ++i) {
+		VertexShader(vertices[i], vertexPixels[i]);
+	}
+
+	vector<ivec2> leftPixels;
+	vector<ivec2> rightPixels;
+	ComputePolygonRows(vertexPixels, leftPixels, rightPixels);
+
+	DrawPolygonRows(leftPixels, rightPixels);
 }
 
 void UpdateR() {
