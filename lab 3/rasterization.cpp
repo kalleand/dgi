@@ -22,6 +22,7 @@ SDL_Surface* screen;
 int t;
 std::vector<Triangle> triangles;
 vec3 camera_position(0, 0, -3.001);
+vec3 current_color;
 mat3 R;
 const float VELOCITY = 0.001f;
 float yaw = 0.0f;
@@ -36,6 +37,8 @@ void DrawPolygonEdges(const vector<vec3> & vertices);
 void ComputePolygonRows(const vector<ivec2> & vertexPixels,
                         vector<ivec2> & leftPixels,
                         vector<ivec2> & rightPixels);
+void DrawPolygonRows(const vector<ivec2> & leftPixels,
+                     const vector<ivec2> & rightPixels);
 void Update();
 void Draw();
 void UpdateR();
@@ -241,6 +244,16 @@ void ComputePolygonRows(const vector<ivec2> & vertexPixels,
 	}
 }
 
+void DrawPolygonRows(const vector<ivec2> & leftPixels,
+                     const vector<ivec2> & rightPixels) {
+	for (int i = 0; i < leftPixels.size(); ++i) {
+		int y = leftPixels[i].y;
+
+		for (int x = leftPixels[i].x; x < rightPixels[i].x; ++x) {
+			PutPixelSDL(screen, x, y, current_color);
+		}
+	}
+}
 
 void UpdateR() {
 	R = mat3(cos(yaw), 0, -sin(yaw),               
