@@ -26,24 +26,21 @@ void Update();
 void Draw();
 void UpdateR();
 
-int main( int argc, char* argv[] )
-{
+int main(int argc, char* argv[]) {
     LoadTestModel( triangles );
     screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT );
     t = SDL_GetTicks();	// Set start value for timer.
 
-    while( NoQuitMessageSDL() )
-    {
+    while (NoQuitMessageSDL()) {
         Update();
         Draw();
     }
 
-    SDL_SaveBMP( screen, "screenshot.bmp" );
+    SDL_SaveBMP(screen, "screenshot.bmp");
     return 0;
 }
 
-void Update()
-{
+void Update() {
     // Compute frame time:
     int t2 = SDL_GetTicks();
     float dt = float(t2-t);
@@ -52,52 +49,52 @@ void Update()
 
     Uint8* keystate = SDL_GetKeyState(0);
 
-    if( keystate[SDLK_UP] )
+    if (keystate[SDLK_UP])
         ;
 
-    if( keystate[SDLK_DOWN] )
+    if (keystate[SDLK_DOWN])
         ;
 
-    if( keystate[SDLK_RIGHT] )
+    if (keystate[SDLK_RIGHT])
         ;
 
-    if( keystate[SDLK_LEFT] )
+    if (keystate[SDLK_LEFT])
         ;
 
-    if( keystate[SDLK_RSHIFT] )
+    if (keystate[SDLK_RSHIFT])
         ;
 
-    if( keystate[SDLK_RCTRL] )
+    if (keystate[SDLK_RCTRL])
         ;
 
-    if( keystate[SDLK_w] )
+    if (keystate[SDLK_w])
         ;
 
-    if( keystate[SDLK_s] )
+    if (keystate[SDLK_s])
         ;
 
-    if( keystate[SDLK_d] )
+    if (keystate[SDLK_d])
         ;
 
-    if( keystate[SDLK_a] )
+    if (keystate[SDLK_a])
         ;
 
-    if( keystate[SDLK_e] )
+    if (keystate[SDLK_e])
         ;
 
-    if( keystate[SDLK_q] )
+    if (keystate[SDLK_q])
         ;
 }
 
 void Draw()
 {
-    SDL_FillRect( screen, 0, 0 );
+    SDL_FillRect(screen, 0, 0);
     UpdateR();
 
-    if( SDL_MUSTLOCK(screen) )
+    if (SDL_MUSTLOCK(screen))
         SDL_LockSurface(screen);
 
-    for( int i=0; i<triangles.size(); ++i )
+    for (int i = 0; i < triangles.size(); ++i)
     {
         std::vector<vec3> vertices(3);
 
@@ -106,8 +103,7 @@ void Draw()
         vertices[2] = triangles[i].v2;
 
         // Add drawing
-        for (int j = 0; j < 3; j++)
-        {
+        for (int j = 0; j < 3; ++j) {
             ivec2 proj_pos;
             VertexShader(vertices[j], proj_pos);
             vec3 color(1, 1, 1);
@@ -115,7 +111,7 @@ void Draw()
         }
     }
 
-    if ( SDL_MUSTLOCK(screen) )
+    if (SDL_MUSTLOCK(screen))
         SDL_UnlockSurface(screen);
 
     SDL_UpdateRect( screen, 0, 0, 0, 0 );
