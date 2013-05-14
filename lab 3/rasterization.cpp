@@ -27,6 +27,7 @@ float yaw = 0.0f;
 void Interpolate(ivec2 a, ivec2 b, std::vector<ivec2> & result);
 void VertexShader(const vec3 & v, ivec2 & p);
 void DrawLineSDL(SDL_Surface * surface, ivec2 a, ivec2 b, vec3 color);
+void DrawPolygonEdges(const vector<vec3> & vertices);
 void Update();
 void Draw();
 void UpdateR();
@@ -107,13 +108,7 @@ void Draw()
         vertices[1] = triangles[i].v1;
         vertices[2] = triangles[i].v2;
 
-        // Add drawing
-        for (int j = 0; j < 3; ++j) {
-            ivec2 proj_pos;
-            VertexShader(vertices[j], proj_pos);
-            vec3 color(1, 1, 1);
-            PutPixelSDL(screen, proj_pos.x, proj_pos.y, color);
-        }
+        DrawPolygonEdges(vertices);
     }
 
     if (SDL_MUSTLOCK(screen))
@@ -150,6 +145,23 @@ void DrawLineSDL(SDL_Surface * surface, ivec2 a, ivec2 b, vec3 color) {
 
 	for (auto it = line.begin(); it != line.end(); ++it) {
 		PutPixelSDL(surface, (*it).x, (*it).y, color);
+	}
+}
+
+void DrawPolygonEdges(const vector<vec3> & vertices) {
+	int V = vertices.size();
+
+	// Transform each vertex from 3D world position to 2D image position:
+	vector<ivec2> projectedVertices(V);
+	for (int i = 0; i < V; ++i) {
+		VertexShader(vertices[i], projectedVertices[i]);
+	}
+
+	// Loop over all vertices and draw the edge from it to the next vertex:
+	for (int i = 0; i < V; ++i) {
+		int j = (i + 1) % V; // The next vertex
+		vec3 color(1, 1, 1);
+		DrawLineSDL(screen, projectedVertices[i], projectedVertices[j], color);
 	}
 }
 
