@@ -4,7 +4,6 @@
 #include "SDLauxiliary.h"
 #include "TestModel.h"
 #include <vector>
-#include "../lab 1/interpolate.h"
 #include "pixel.h"
 #include "vertex.h"
 #include <cmath>
@@ -22,46 +21,51 @@ using std::endl;
 
 constexpr double pi() { return atan(1) / 4; } // Define pi as arctan(1) / 4
 
+// Screen
 const int SCREEN_WIDTH = 500;
 const int SCREEN_HEIGHT = 500;
 SDL_Surface* screen;
-int t;
-std::vector<Triangle> triangles;
-vec3 camera_position(0, 0, -3.001);
 
+// Geometry
+std::vector<Triangle> triangles;
+
+// State variables
+int t;
 vec3 currentNormal;
 vec3 currentReflectance;
+float depthBuffer[SCREEN_HEIGHT][SCREEN_WIDTH];
 
+// Camera properties
+vec3 camera_position(0, 0, -3.001);
 mat3 R;
 const float VELOCITY = 0.001f;
 float yaw = 0.0f;
 float yawDelta = 0.0007371f;
-float depthBuffer[SCREEN_HEIGHT][SCREEN_WIDTH];
 
+// Light source parameters
 vec3 lightPos(0, -0.5, -0.7);
 vec3 lightPower = 1.1f * vec3(1, 1, 1);
-vec3 indirectLightPowerPerArea = 0.5f *vec3(1, 1, 1);
+vec3 indirectLightPowerPerArea = 0.5f * vec3(1, 1, 1);
 
 // FUNCTIONS
 
-void Interpolate(ivec2 a, ivec2 b, std::vector<ivec2> & result);
 void Interpolate(Pixel a, Pixel b, std::vector<Pixel> & result);
 void VertexShader(const Vertex & v, Pixel & p);
 void PixelShader(const Pixel & p);
 void ComputePolygonRows(const vector<Pixel> & vertexPixels,
-        vector<Pixel> & leftPixels,
-        vector<Pixel> & rightPixels);
+                        vector<Pixel> & leftPixels,
+                        vector<Pixel> & rightPixels);
 void DrawPolygonRows(const vector<Pixel> & leftPixels,
-        const vector<Pixel> & rightPixels);
+                     const vector<Pixel> & rightPixels);
 void DrawPolygon(const vector<Vertex> & vertices);
 void Update();
 void Draw();
 void UpdateR();
 
 int main(int argc, char* argv[]) {
-    LoadTestModel( triangles );
-    screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT );
-    t = SDL_GetTicks();	// Set start value for timer.
+    LoadTestModel(triangles);
+    screen = InitializeSDL(SCREEN_WIDTH, SCREEN_HEIGHT);
+    t = SDL_GetTicks(); // Set start value for timer.
 
     while (NoQuitMessageSDL()) {
         Update();
@@ -144,6 +148,7 @@ void Update() {
     }
 }
 
+// This function draws one frame of the scene.
 void Draw() {
     SDL_FillRect(screen, 0, 0);
     UpdateR();
@@ -159,101 +164,113 @@ void Draw() {
     if (SDL_MUSTLOCK(screen))
         SDL_LockSurface(screen);
 
+    // Loop through all the geometry
     for (int i = 0; i < triangles.size(); ++i) {
+        // Create three vertices from each triangle
         std::vector<Vertex> vertices(3);
         vertices[0].position = triangles[i].v0;
         vertices[1].position = triangles[i].v1;
         vertices[2].position = triangles[i].v2;
 
+        // Set the current normal and reflectance so that we can
+        // access it later when calculating illumination
         currentNormal = triangles[i].normal;
         currentReflectance = triangles[i].color;
 
+        // Draw the polygons determined by this vertices
         DrawPolygon(vertices);
     }
 
     if (SDL_MUSTLOCK(screen))
         SDL_UnlockSurface(screen);
 
-    SDL_UpdateRect( screen, 0, 0, 0, 0 );
+    SDL_UpdateRect(screen, 0, 0, 0, 0);
 }
 
-void Interpolate(ivec2 a, ivec2 b, std::vector<ivec2> & result) {
-    int N = result.size();
-    vec2 step = vec2(b - a) / float(glm::max(N - 1, 1));
-    vec2 current(a);
-    for (int i = 0; i < N; ++i) {
-        result[i] = current;
-        current += step;
-    }
-}
-
+// We need a special function to interpolate pixels, since we need to use
+// floating point number as coordinate steps.
 void Interpolate(Pixel a, Pixel b, std::vector<Pixel> & result) {
     int N = result.size();
     float divisor = float(glm::max(N - 1, 1));
 
-    float dx = (b.x - a.x) / divisor;
-    float dy = (b.y - a.y) / divisor;
-    float dzinv = (b.zinv - a.zinv) / divisor;
-	vec3 dpos3d = (b.pos3d - a.pos3d) * (1.0f /  divisor);
+    // Calculate the step for all pixel properties
+    float xStep = (b.x - a.x) / divisor;
+    float yStep = (b.y - a.y) / divisor;
+    float zinvStep = (b.zinv - a.zinv) / divisor;
+    vec3 pos3dStep = (b.pos3d - a.pos3d) * (1.0f /  divisor);
 
-    float xc = a.x;
-    float yc = a.y;
-    float zinvc = a.zinv;
-    vec3 pos3dc = a.pos3d;
+    // Initialize all properties to the values of the first pixel
+    float x = a.x;
+    float y = a.y;
+    float zinv = a.zinv;
+    vec3 pos3d = a.pos3d;
 
+    // Do all steps
     for (int i = 0; i < N; i++) {
-        result[i].x = round(xc);
-        result[i].y = round(yc);
-        result[i].zinv = zinvc;
-        result[i].pos3d = pos3dc;
+        // Set the properties of this pixel
+        result[i].x = round(x);
+        result[i].y = round(y);
+        result[i].zinv = zinv;
+        result[i].pos3d = pos3d;
 
-        xc += dx;
-        yc += dy;
-        zinvc += dzinv;
-        pos3dc += dpos3d;
+        // Update the step properties
+        x += xStep;
+        y += yStep;
+        zinv += zinvStep;
+        pos3d += pos3dStep;
     }
 }
 
+// This function projects a vertex into a pixel on the screen.
 void VertexShader(const Vertex & v, Pixel & p) {
+    // Setup camera and focal length
     vec3 p_prim = (v.position - camera_position) * R;
     float f = SCREEN_WIDTH;
+
+    // Do the actual projection
     p.x = round(f * p_prim.x / p_prim.z + SCREEN_WIDTH / 2);
     p.y = round(f * p_prim.y / p_prim.z + SCREEN_HEIGHT / 2);
+
+    // Also save zinv and pos3d so that we can use it later for
+    // calculating per-pixel illumination
     p.zinv = 1 / p_prim.z;
     p.pos3d = v.position;
 }
 
+// This function calculates illumination for a pixel and draws it to the screen,
+// if it is at the front of the depth buffer.
 void PixelShader(const Pixel & p) {
-	int x = p.x;
-	int y = p.y;
+    int x = p.x;
+    int y = p.y;
 
-	if (x < 0 || x >= SCREEN_WIDTH ||
-	    y < 0 || y >= SCREEN_HEIGHT)
-	    return;
+    if (x < 0 || x >= SCREEN_WIDTH ||
+        y < 0 || y >= SCREEN_HEIGHT)
+        return;
 
-	if (p.zinv > depthBuffer[y][x]) {
-		depthBuffer[y][x] = p.zinv;
+    if (p.zinv > depthBuffer[y][x]) {
+        depthBuffer[y][x] = p.zinv;
 
-		// Get distance from light source to intersection.
-		vec3 distance = lightPos - p.pos3d;
-		// Get the backwards direction that the light travels.
-		vec3 r = glm::normalize(distance);
-		// The euclidean distance to the light source from the intersection.
-		float radius = glm::length(distance);
+        // Get distance from light source to intersection.
+        vec3 distance = lightPos - p.pos3d;
+        // Get the backwards direction that the light travels.
+        vec3 r = glm::normalize(distance);
+        // The euclidean distance to the light source from the intersection.
+        float radius = glm::length(distance);
 
-		float scalar = glm::dot(r, currentNormal);
-		float divisor = 4 * pi() * radius * radius;
-		vec3 D = lightPower * std::max(scalar, 0.0f) * (1.0f / divisor);
-		vec3 illumination = currentReflectance * (D + indirectLightPowerPerArea);
+        float scalar = glm::dot(r, currentNormal);
+        float divisor = 4 * pi() * radius * radius;
+        vec3 D = lightPower * std::max(scalar, 0.0f) * (1.0f / divisor);
+        vec3 illumination = currentReflectance * (D + indirectLightPowerPerArea);
 
-		// Finally, draw the pixel
-		PutPixelSDL(screen, x, y, illumination);
-	}
+        // Finally, draw the pixel
+        PutPixelSDL(screen, x, y, illumination);
+    }
 }
 
+// Computes the left and right pixels of a polygon
 void ComputePolygonRows(const vector<Pixel> & vertexPixels,
-        vector<Pixel> & leftPixels,
-        vector<Pixel> & rightPixels) {
+                        vector<Pixel> & leftPixels,
+                        vector<Pixel> & rightPixels) {
     // 1. Find max and min y-value of the polygon
     // and compute the number of rows it occupies.
     int min_y = numeric_limits<int>::max();
@@ -287,21 +304,32 @@ void ComputePolygonRows(const vector<Pixel> & vertexPixels,
     for (int i = 0; i < vertexPixels.size(); ++i) {
         int j = (i + 1) % vertexPixels.size();
 
+        // Determine how many pixels this edge will be
         int deltax = glm::abs(vertexPixels[i].x - vertexPixels[j].x);
         int deltay = glm::abs(vertexPixels[i].y - vertexPixels[j].y);
         int pixels = glm::max(deltax, deltay) + 1;
-        vector<Pixel> line(pixels);
-        Interpolate(vertexPixels[i], vertexPixels[j], line);
 
-        for (auto it = line.begin(); it != line.end(); ++it) {
+        // Calculate all edge pixels by interpolation
+        vector<Pixel> edge(pixels);
+        Interpolate(vertexPixels[i], vertexPixels[j], edge);
+
+        // Check all the line pixels
+        for (auto it = edge.begin(); it != edge.end(); ++it) {
             int k = (*it).y;
-            if(k >= SCREEN_HEIGHT || k < 0) continue;
-            if((*it).x < leftPixels[k].x) {
+
+            // Skip pixels out of the screen, to avoid modifying
+            // memory that we should not modify
+            if (k >= SCREEN_HEIGHT || k < 0) continue;
+
+            // Update left pixel
+            if ((*it).x < leftPixels[k].x) {
                 leftPixels[k].x = (*it).x;
                 leftPixels[k].zinv = (*it).zinv;
                 leftPixels[k].pos3d = (*it).pos3d;
             }
-            if((*it).x > rightPixels[k].x) {
+
+            // Update right pixel
+            if ((*it).x > rightPixels[k].x) {
                 rightPixels[k].x = (*it).x;
                 rightPixels[k].zinv = (*it).zinv;
                 rightPixels[k].pos3d = (*it).pos3d;
@@ -310,33 +338,48 @@ void ComputePolygonRows(const vector<Pixel> & vertexPixels,
     }
 }
 
+// This function draws a polygon determined by its left and right pixel limits.
 void DrawPolygonRows(const vector<Pixel> & leftPixels,
                      const vector<Pixel> & rightPixels) {
+    // Go through all the rows.
     for (int i = 0; i < leftPixels.size(); ++i) {
-    	int N = 1 + rightPixels[i].x - leftPixels[i].x;
-    	if (N <= 0) continue;
-		vector<Pixel> row(N);
-		Interpolate(leftPixels[i], rightPixels[i], row);
+        // Determine the horizontal length of the row.
+        int N = 1 + rightPixels[i].x - leftPixels[i].x;
 
+        // Skip empty rows
+        if (N <= 0) continue;
+
+        // Interpolate the pixels of the row.
+        vector<Pixel> row(N);
+        Interpolate(leftPixels[i], rightPixels[i], row);
+
+        // Finally, put the pixels on the screen with the pixel shader
         for (auto it = row.begin(); it != row.end(); ++it) {
             PixelShader(*it);
         }
     }
 }
 
+// This function dras a polygon from the given vertices.
 void DrawPolygon(const vector<Vertex> & vertices) {
+    // Setup a collection of pixels
     vector<Pixel> vertexPixels(vertices.size());
 
+    // Project the vertices to the same number of pixels.
     for (int i = 0; i < vertices.size(); ++i) {
         VertexShader(vertices[i], vertexPixels[i]);
     }
 
+    // Compute where the polygon's left and right pixels are.
     vector<Pixel> leftPixels;
     vector<Pixel> rightPixels;
     ComputePolygonRows(vertexPixels, leftPixels, rightPixels);
+
+    // Fill the calculated shape.
     DrawPolygonRows(leftPixels, rightPixels);
 }
 
+// This function updates the R matrix given the current camera properties.
 void UpdateR() {
     R = mat3(cos(yaw), 0, -sin(yaw),               
                     0, 1,         0,
