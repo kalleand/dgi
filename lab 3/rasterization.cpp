@@ -113,23 +113,35 @@ void Update() {
     if (keystate[SDLK_RCTRL])
         ;
 
-    if (keystate[SDLK_w])
-        ;
+    // Move light source forward.
+    if (keystate[SDLK_w]) {
+        lightPos.z += VELOCITY * dt;
+    }
 
-    if (keystate[SDLK_s])
-        ;
+    // Move light source backward.
+    if (keystate[SDLK_s]) {
+        lightPos.z -= VELOCITY * dt;
+    }
 
-    if (keystate[SDLK_d])
-        ;
+    // Move light source to the left.
+    if (keystate[SDLK_a]) {
+        lightPos.x -= VELOCITY * dt;
+    }
 
-    if (keystate[SDLK_a])
-        ;
+    // Move light source to the right.
+    if (keystate[SDLK_d]) {
+        lightPos.x += VELOCITY * dt;
+    }
 
-    if (keystate[SDLK_e])
-        ;
+    // Move light source down.
+    if (keystate[SDLK_q]) {
+        lightPos.y -= VELOCITY * dt;
+    }
 
-    if (keystate[SDLK_q])
-        ;
+    // Move light source up.
+    if (keystate[SDLK_e]) {
+        lightPos.y += VELOCITY * dt;
+    }
 }
 
 void Draw() {
