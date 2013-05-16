@@ -122,8 +122,7 @@ void Update() {
         ;
 }
 
-void Draw()
-{
+void Draw() {
     SDL_FillRect(screen, 0, 0);
     UpdateR();
 
@@ -133,7 +132,7 @@ void Draw()
             depthBuffer[y][x] = 0;
         }
     }
-    
+
 
     if (SDL_MUSTLOCK(screen))
         SDL_LockSurface(screen);
@@ -267,18 +266,17 @@ void DrawPolygonRows(const vector<Pixel> & leftPixels,
     for (int i = 0; i < leftPixels.size(); ++i) {
         int y = leftPixels[i].y;
 
-        float step = (rightPixels[i].zinv - leftPixels[i].zinv) / (rightPixels[i].x - leftPixels[i].x + 1);
+        float step = (rightPixels[i].zinv - leftPixels[i].zinv) /
+            (rightPixels[i].x - leftPixels[i].x + 1);
         float zinvc = leftPixels[i].zinv;
 
         int x = glm::max(leftPixels[i].x, 0);
 
         while (x <= glm::min(rightPixels[i].x, SCREEN_WIDTH -1)) {
-        	Pixel p;
-        	p.x = x;
-        	p.y = y;
-        	p.zinv = zinvc;
-
-        	PixelShader(p);
+            if (zinvc > depthBuffer[y][x]) {
+                PutPixelSDL(screen, x, y, current_color);
+                depthBuffer[y][x] = zinvc;
+            }
 
             zinvc += step;
             ++x;
