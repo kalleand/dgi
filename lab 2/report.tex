@@ -14,7 +14,7 @@
 
 \maketitle
 
-\begin{figure}
+\begin{figure}[H]
     \centering
     \includegraphics[width=10cm]{main720.png}
     \caption{The scene rendered.}
@@ -27,12 +27,12 @@ pretty images using computers. However, it is not very useful for creating these
 images in real time. To be able to create an image using raytracing in real time
 requires some smart tricks and overall clever coding.
 
-Raytracing is the process of shooting rays of and trace this path that the rays
+Raytracing is the process of shooting rays of light, trace the path that the rays
 travel and from this receive a very realistic looking image of the scene that is
 to be rendered.
 
-In this lab a scene constructed of a room with three walls, roof, floor and two
-cubes all in different colors is drawn as seen in figure TODO!. Then shadowing
+In this lab a scene containing a room with three walls, roof, floor and two
+cubes all in different colors are drawn as seen in figure \ref{fig:main}. Then shadowing
 is implemented using the same manner; shooting rays from the lightsource and
 discovering if the point is hidden (i.e. shadowed) or not.
 
@@ -40,26 +40,27 @@ discovering if the point is hidden (i.e. shadowed) or not.
 \section{Implementation method}
 In contrast to how we implemented the first lab where we worked individually and
 then merged the two implementations into one, in this lab we worked together
-throughout the implementing the lab. This worked really well and we could
+throughout the implementation of the lab. This worked really well and we could
 discuss the implementation and math behind it and get a better understanding of
 the math behind raytracing.
 
-Implementing the raytracer of the scene given to us we started by attacking the
-lab as described in the instructions. The instructions were well balanced in the
-process of implementing a raytracer with the background of the assignment and
-math to back it up together with the work to be implemented.
+We started by attacking the lab as described in the instructions. The
+instructions were well balanced between the process of implementing a raytracer
+and the math behind it. We found that we both got a better understanding of the
+math. This probably made the implementation itself easier.
 
-If the first lab was a bit too easy this lab was better structured in that the
-first assignments was easier and then the difficulty increased as we progressed
-through the lab.
+If the first lab was a bit too easy, this lab was better structured in that the
+first assignments were easier and then the difficulty increased as we progressed
+through the lab. We spent quite some time to debug errors that we had made in
+the later stages of the lab.
 
-The only place where we digressed from the lab instructions were when the
-implementing of the shadows. In the lab the instructions was to shoot rays from
+The only place where we digressed from the lab instructions was when
+implementing the shadows. In the lab, the instructions were to shoot rays from
 the light source towards the point and discovering if the point is the closest
 intersection (and it should not be shadowed). We decided to shoot the rays from
-the point being looked at towards the light source. This was really useful for
-when the triangle intersections of the ray was really close to each other
-because the comparison between the distance to the light source which usually is
+the point being looked at towards the light source. This was really useful
+when the triangle intersections of the ray were really close to each other,
+because the comparison between the distance to the light is usually
 quite a bit longer than the short distance to the other close intersection. The
 main benefit of implementing the shadowing this way was that the rounding errors
 present using floats could be ignored completely.
@@ -70,32 +71,38 @@ should be implemented to make sure the raytracer is as fast as possible to try
 to make it work in real time.
 
 We had some problems when trying to find the closest intersecting triangle. We
-used the function vec3::length however this did not return the euclidean
+used the function vec3::length, however this did not return the euclidean
 distance but something else. The function that we ended up using was
 glm::distance. This was according to our experience badly documented and we
-basically had to guess what functions that were available to use. Acctually a
+basically had to guess what functions that were available to use. Actually a
 lot of the implementation time was used trying to figure out this very problem.
+While you could find out what a function did when you knew that it existed, we
+never found an extensive list of all the availiable GLM functions.
 
 When the lab was completed we tried to make it faster as to render one frame
 using a screen resolution of 1280x720 up to 23.5 seconds. We played around with
 various optimization attempts and profiling of the code. We realized quickly
 that the major bottleneck in the program was calculating the inverse of the
 matrix to get the intersection of the ray and the triangle looked at currently.
-We use the function glm::inverse to calculate this inverse hence we could not
+We use the function glm::inverse to calculate this inverse, hence we could not
 optimize this any further without writing our own matrix inverse function. We
 then discovered that the optimization flag O3 in g++ would provide an incredible
-speedup and the same fram with a resolution of 1280x720 would now take around 0.5
-seconds.
+speedup and the same frame with a resolution of 1280x720 would now take around 0.5
+seconds. This flag could probably be something to recommend in future versions
+of this course!
 
 \section{Result}
-The resulting raytracer works really well on our own machines, escpecially once
+The resulting raytracer works really well on our own machines, especially once
 the optimization flag was set during compiling of the code. 
 
 As demonstrated in figure \ref{fig:camera} the camera can be moved around and
-the view are as expected from a pin-hole camera.
+the views are as expected from a pin-hole camera.x
 
 The light source can be moved around as well, as specified in the lab instructions. A
 demonstration of this can be seen in figure \ref{fig:light}.
+Note that the shadows update nicely when the light is moved.
+The background illumination algorithm really helps, it makes the shadows seem much
+more real than when just implementing direct illumination.
 
 \begin{figure}[H]
     \centering
