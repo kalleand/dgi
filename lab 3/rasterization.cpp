@@ -4,7 +4,6 @@
 #include "SDLauxiliary.h"
 #include "TestModel.h"
 #include <vector>
-#include "../lab 1/interpolate.h"
 #include "pixel.h"
 #include "vertex.h"
 #include <cmath>
@@ -44,7 +43,6 @@ vec3 indirectLightPowerPerArea = 0.5f *vec3(1, 1, 1);
 
 // FUNCTIONS
 
-void Interpolate(ivec2 a, ivec2 b, std::vector<ivec2> & result);
 void Interpolate(Pixel a, Pixel b, std::vector<Pixel> & result);
 void VertexShader(const Vertex & v, Pixel & p);
 void PixelShader(const Pixel & p);
@@ -177,16 +175,8 @@ void Draw() {
     SDL_UpdateRect( screen, 0, 0, 0, 0 );
 }
 
-void Interpolate(ivec2 a, ivec2 b, std::vector<ivec2> & result) {
-    int N = result.size();
-    vec2 step = vec2(b - a) / float(glm::max(N - 1, 1));
-    vec2 current(a);
-    for (int i = 0; i < N; ++i) {
-        result[i] = current;
-        current += step;
-    }
-}
-
+// We need a special function to interpolate pixels, since we need to use
+// floating point number as coordinate steps.
 void Interpolate(Pixel a, Pixel b, std::vector<Pixel> & result) {
     int N = result.size();
     float divisor = float(glm::max(N - 1, 1));
