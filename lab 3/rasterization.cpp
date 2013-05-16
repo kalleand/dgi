@@ -6,6 +6,7 @@
 #include <vector>
 #include "../lab 1/interpolate.h"
 #include "pixel.h"
+#include "vertex.h"
 #include <cmath>
 
 using glm::vec3;
@@ -36,14 +37,14 @@ float depthBuffer[SCREEN_HEIGHT][SCREEN_WIDTH];
 
 void Interpolate(ivec2 a, ivec2 b, std::vector<ivec2> & result);
 void Interpolate(Pixel a, Pixel b, std::vector<Pixel> & result);
-void VertexShader(const vec3 & v, Pixel & p);
+void VertexShader(const Vertex & v, Pixel & p);
 void PixelShader(const Pixel & p);
 void ComputePolygonRows(const vector<Pixel> & vertexPixels,
         vector<Pixel> & leftPixels,
         vector<Pixel> & rightPixels);
 void DrawPolygonRows(const vector<Pixel> & leftPixels,
         const vector<Pixel> & rightPixels);
-void DrawPolygon(const vector<vec3> & vertices);
+void DrawPolygon(const vector<Vertex> & vertices);
 void Update();
 void Draw();
 void UpdateR();
@@ -140,10 +141,10 @@ void Draw() {
     for (int i = 0; i < triangles.size(); ++i) {
         current_color = triangles[i].color;
 
-        std::vector<vec3> vertices(3);
-        vertices[0] = triangles[i].v0;
-        vertices[1] = triangles[i].v1;
-        vertices[2] = triangles[i].v2;
+        std::vector<Vertex> vertices(3);
+        vertices[0].position = triangles[i].v0;
+        vertices[1].position = triangles[i].v1;
+        vertices[2].position = triangles[i].v2;
 
         DrawPolygon(vertices);
     }
@@ -184,12 +185,12 @@ void Interpolate(Pixel a, Pixel b, std::vector<Pixel> & result) {
     }
 }
 
-void VertexShader(const vec3 & v, Pixel & p) {
-    vec3 p_prim = (v - camera_position) * R;
+void VertexShader(const Vertex & v, Pixel & p) {
+    vec3 p_prim = (v.position - camera_position) * R;
     float f = SCREEN_WIDTH;
     p.x = round(f * p_prim.x / p_prim.z + SCREEN_WIDTH / 2);
     p.y = round(f * p_prim.y / p_prim.z + SCREEN_HEIGHT / 2);
-    p.zinv = 1/p_prim.z;
+    p.zinv = 1 / p_prim.z;
 
     return;
 }
@@ -284,7 +285,7 @@ void DrawPolygonRows(const vector<Pixel> & leftPixels,
     }
 }
 
-void DrawPolygon(const vector<vec3> & vertices) {
+void DrawPolygon(const vector<Vertex> & vertices) {
     vector<Pixel> vertexPixels(vertices.size());
 
     for (int i = 0; i < vertices.size(); ++i) {
