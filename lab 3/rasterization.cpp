@@ -252,20 +252,23 @@ void ComputePolygonRows(const vector<Pixel> & vertexPixels,
 }
 
 void DrawPolygonRows(const vector<Pixel> & leftPixels,
-        const vector<Pixel> & rightPixels) {
+                     const vector<Pixel> & rightPixels) {
     for (int i = 0; i < leftPixels.size(); ++i) {
         int y = leftPixels[i].y;
 
-        //printf("%f,%f\n", rightPixels[i].zinv, leftPixels[i].zinv);
         float step = (rightPixels[i].zinv - leftPixels[i].zinv) / (rightPixels[i].x - leftPixels[i].x + 1);
         float zinvc = leftPixels[i].zinv;
-        for (int x = glm::max(leftPixels[i].x, 0); x <= glm::min(rightPixels[i].x, SCREEN_WIDTH -1); ++x) {
-            if(zinvc > depthBuffer[y][x]) {
+
+        int x = glm::max(leftPixels[i].x, 0);
+
+        while (x <= glm::min(rightPixels[i].x, SCREEN_WIDTH -1)) {
+            if (zinvc > depthBuffer[y][x]) {
                 PutPixelSDL(screen, x, y, current_color);
                 depthBuffer[y][x] = zinvc;
             }
 
             zinvc += step;
+            ++x;
         }
     }
 }
@@ -285,6 +288,6 @@ void DrawPolygon(const vector<vec3> & vertices) {
 
 void UpdateR() {
     R = mat3(cos(yaw), 0, -sin(yaw),               
-            0, 1,         0,
-            sin(yaw), 0,  cos(yaw));
+                    0, 1,         0,
+             sin(yaw), 0,  cos(yaw));
 }
