@@ -3,6 +3,7 @@
 \usepackage[utf8]{inputenc}
 \usepackage{graphicx}
 \usepackage{subfig}
+\usepackage{float}
 
 \begin{document}
 
@@ -63,7 +64,7 @@ In the middle of the frame, all four colors blend together into a greyish color.
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{gradient.png}
+\includegraphics[width=8cm]{gradient.png}
 \caption{Gradient produced by interpolation}
 \label{gradient_fig}
 \end{center}
@@ -75,12 +76,12 @@ First of all, note that the screenshot shown here does not quite do the animatio
 You can see some of the motion blur in the edges.
 These are the stars that are closest to the camera, which is way they have the longest blur lines.
 The bottom left corner is probably the place where this is most visible.
-Also not that all motion blur lines are directed out from the image.
+Also note that all motion blur lines are directed out from the image.
 This really helps to sell the effect that we are moving through the star field.
 
 \begin{figure}[H]
 \begin{center}
-\includegraphics[width=\textwidth]{starfield.png}
+\includegraphics[width=8cm]{starfield.png}
 \caption{star field with motion blur}
 \label{starfield_fig}
 \end{center}
