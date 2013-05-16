@@ -8,7 +8,7 @@ struct Pixel
     int x;
     int y;
     float zinv;
-    glm::vec3 illumination;
+    glm::vec3 pos3d;
 };
 
 #endif

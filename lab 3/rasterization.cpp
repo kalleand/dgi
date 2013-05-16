@@ -28,7 +28,10 @@ SDL_Surface* screen;
 int t;
 std::vector<Triangle> triangles;
 vec3 camera_position(0, 0, -3.001);
-vec3 current_color;
+
+vec3 currentNormal;
+vec3 currentReflectance;
+
 mat3 R;
 const float VELOCITY = 0.001f;
 float yaw = 0.0f;
@@ -145,17 +148,13 @@ void Draw() {
         SDL_LockSurface(screen);
 
     for (int i = 0; i < triangles.size(); ++i) {
-        current_color = triangles[i].color;
-
         std::vector<Vertex> vertices(3);
         vertices[0].position = triangles[i].v0;
         vertices[1].position = triangles[i].v1;
         vertices[2].position = triangles[i].v2;
 
-		for (int j = 0; j < 3; ++j) {
-	        vertices[j].normal = triangles[i].normal;
-	        vertices[j].reflectance = triangles[i].color;
-	    }
+        currentNormal = triangles[i].normal;
+        currentReflectance = triangles[i].color;
 
         DrawPolygon(vertices);
     }
@@ -183,23 +182,23 @@ void Interpolate(Pixel a, Pixel b, std::vector<Pixel> & result) {
     float dx = (b.x - a.x) / divisor;
     float dy = (b.y - a.y) / divisor;
     float dzinv = (b.zinv - a.zinv) / divisor;
-	vec3 dill = (b.illumination - a.illumination) * (1.0f /  divisor);
+	vec3 dpos3d = (b.pos3d - a.pos3d) * (1.0f /  divisor);
 
     float xc = a.x;
     float yc = a.y;
     float zinvc = a.zinv;
-    vec3 illc = a.illumination;
+    vec3 pos3dc = a.pos3d;
 
     for (int i = 0; i < N; i++) {
         result[i].x = round(xc);
         result[i].y = round(yc);
         result[i].zinv = zinvc;
-        result[i].illumination = illc;
+        result[i].pos3d = pos3dc;
 
         xc += dx;
         yc += dy;
         zinvc += dzinv;
-        illc += dill;
+        pos3dc += dpos3d;
     }
 }
 
@@ -209,18 +208,7 @@ void VertexShader(const Vertex & v, Pixel & p) {
     p.x = round(f * p_prim.x / p_prim.z + SCREEN_WIDTH / 2);
     p.y = round(f * p_prim.y / p_prim.z + SCREEN_HEIGHT / 2);
     p.zinv = 1 / p_prim.z;
-
-	// Get distance from light source to intersection.
-    vec3 distance = lightPos - v.position;
-    // Get the backwards direction that the light travels.
-    vec3 r = glm::normalize(distance);
-    // The euclidean distance to the light source from the intersection.
-    float radius = glm::length(distance);
-
-	float scalar = glm::dot(r, v.normal);
-	float divisor = 4 * pi() * radius * radius;
-	vec3 D = lightPower * std::max(scalar, 0.0f) * (1.0f / divisor);
-	p.illumination = v.reflectance * (D + indirectLightPowerPerArea);
+    p.pos3d = v.position;
 }
 
 void PixelShader(const Pixel & p) {
@@ -233,7 +221,21 @@ void PixelShader(const Pixel & p) {
 
 	if (p.zinv > depthBuffer[y][x]) {
 		depthBuffer[y][x] = p.zinv;
-		PutPixelSDL(screen, x, y, p.illumination);
+
+		// Get distance from light source to intersection.
+		vec3 distance = lightPos - p.pos3d;
+		// Get the backwards direction that the light travels.
+		vec3 r = glm::normalize(distance);
+		// The euclidean distance to the light source from the intersection.
+		float radius = glm::length(distance);
+
+		float scalar = glm::dot(r, currentNormal);
+		float divisor = 4 * pi() * radius * radius;
+		vec3 D = lightPower * std::max(scalar, 0.0f) * (1.0f / divisor);
+		vec3 illumination = currentReflectance * (D + indirectLightPowerPerArea);
+
+		// Finally, draw the pixel
+		PutPixelSDL(screen, x, y, illumination);
 	}
 }
 
@@ -285,12 +287,12 @@ void ComputePolygonRows(const vector<Pixel> & vertexPixels,
             if((*it).x < leftPixels[k].x) {
                 leftPixels[k].x = (*it).x;
                 leftPixels[k].zinv = (*it).zinv;
-                leftPixels[k].illumination = (*it).illumination;
+                leftPixels[k].pos3d = (*it).pos3d;
             }
             if((*it).x > rightPixels[k].x) {
                 rightPixels[k].x = (*it).x;
                 rightPixels[k].zinv = (*it).zinv;
-                rightPixels[k].illumination = (*it).illumination;
+                rightPixels[k].pos3d = (*it).pos3d;
             }
         }
     }
