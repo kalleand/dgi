@@ -20,6 +20,8 @@ using std::endl;
 
 // GLOBAL VARIABLES
 
+constexpr double pi() { return atan(1) / 4; } // Define pi as arctan(1) / 4
+
 const int SCREEN_WIDTH = 500;
 const int SCREEN_HEIGHT = 500;
 SDL_Surface* screen;
@@ -32,6 +34,10 @@ const float VELOCITY = 0.001f;
 float yaw = 0.0f;
 float yawDelta = 0.0007371f;
 float depthBuffer[SCREEN_HEIGHT][SCREEN_WIDTH];
+
+vec3 lightPos(0, -0.5, -0.7);
+vec3 lightPower = 1.1f * vec3(1, 1, 1);
+vec3 indirectLightPowerPerArea = 0.5f *vec3(1, 1, 1);
 
 // FUNCTIONS
 
@@ -146,6 +152,11 @@ void Draw() {
         vertices[1].position = triangles[i].v1;
         vertices[2].position = triangles[i].v2;
 
+		for (int j = 0; j < 3; ++j) {
+	        vertices[j].normal = triangles[i].normal;
+	        vertices[j].reflectance = triangles[i].color;
+	    }
+
         DrawPolygon(vertices);
     }
 
@@ -167,21 +178,28 @@ void Interpolate(ivec2 a, ivec2 b, std::vector<ivec2> & result) {
 
 void Interpolate(Pixel a, Pixel b, std::vector<Pixel> & result) {
     int N = result.size();
-    float dx = (b.x - a.x) / float(glm::max(N - 1, 1));
-    float dy = (b.y - a.y) / float(glm::max(N - 1, 1));
-    float dzinv = (b.zinv - a.zinv) / float(glm::max(N - 1, 1));
+    float divisor = float(glm::max(N - 1, 1));
+
+    float dx = (b.x - a.x) / divisor;
+    float dy = (b.y - a.y) / divisor;
+    float dzinv = (b.zinv - a.zinv) / divisor;
+	vec3 dill = (b.illumination - a.illumination) * (1.0f /  divisor);
 
     float xc = a.x;
     float yc = a.y;
     float zinvc = a.zinv;
+    vec3 illc = a.illumination;
+
     for (int i = 0; i < N; i++) {
         result[i].x = round(xc);
         result[i].y = round(yc);
         result[i].zinv = zinvc;
+        result[i].illumination = illc;
 
         xc += dx;
         yc += dy;
         zinvc += dzinv;
+        illc += dill;
     }
 }
 
@@ -192,16 +210,30 @@ void VertexShader(const Vertex & v, Pixel & p) {
     p.y = round(f * p_prim.y / p_prim.z + SCREEN_HEIGHT / 2);
     p.zinv = 1 / p_prim.z;
 
-    return;
+	// Get distance from light source to intersection.
+    vec3 distance = lightPos - v.position;
+    // Get the backwards direction that the light travels.
+    vec3 r = glm::normalize(distance);
+    // The euclidean distance to the light source from the intersection.
+    float radius = glm::length(distance);
+
+	float scalar = glm::dot(r, v.normal);
+	float divisor = 4 * pi() * radius * radius;
+	vec3 D = lightPower * std::max(scalar, 0.0f) * (1.0f / divisor);
+	p.illumination = v.reflectance * (D + indirectLightPowerPerArea);
 }
 
 void PixelShader(const Pixel & p) {
 	int x = p.x;
 	int y = p.y;
 
+	if (x < 0 || x >= SCREEN_WIDTH ||
+	    y < 0 || y >= SCREEN_HEIGHT)
+	    return;
+
 	if (p.zinv > depthBuffer[y][x]) {
 		depthBuffer[y][x] = p.zinv;
-		PutPixelSDL(screen, x, y, current_color);
+		PutPixelSDL(screen, x, y, p.illumination);
 	}
 }
 
@@ -253,10 +285,12 @@ void ComputePolygonRows(const vector<Pixel> & vertexPixels,
             if((*it).x < leftPixels[k].x) {
                 leftPixels[k].x = (*it).x;
                 leftPixels[k].zinv = (*it).zinv;
+                leftPixels[k].illumination = (*it).illumination;
             }
             if((*it).x > rightPixels[k].x) {
                 rightPixels[k].x = (*it).x;
                 rightPixels[k].zinv = (*it).zinv;
+                rightPixels[k].illumination = (*it).illumination;
             }
         }
     }
@@ -265,22 +299,13 @@ void ComputePolygonRows(const vector<Pixel> & vertexPixels,
 void DrawPolygonRows(const vector<Pixel> & leftPixels,
                      const vector<Pixel> & rightPixels) {
     for (int i = 0; i < leftPixels.size(); ++i) {
-        int y = leftPixels[i].y;
+    	int N = 1 + rightPixels[i].x - leftPixels[i].x;
+    	if (N <= 0) continue;
+		vector<Pixel> row(N);
+		Interpolate(leftPixels[i], rightPixels[i], row);
 
-        float step = (rightPixels[i].zinv - leftPixels[i].zinv) /
-            (rightPixels[i].x - leftPixels[i].x + 1);
-        float zinvc = leftPixels[i].zinv;
-
-        int x = glm::max(leftPixels[i].x, 0);
-
-        while (x <= glm::min(rightPixels[i].x, SCREEN_WIDTH -1)) {
-            if (zinvc > depthBuffer[y][x]) {
-                PutPixelSDL(screen, x, y, current_color);
-                depthBuffer[y][x] = zinvc;
-            }
-
-            zinvc += step;
-            ++x;
+        for (auto it = row.begin(); it != row.end(); ++it) {
+            PixelShader(*it);
         }
     }
 }
