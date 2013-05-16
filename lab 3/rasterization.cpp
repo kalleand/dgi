@@ -37,6 +37,7 @@ float depthBuffer[SCREEN_HEIGHT][SCREEN_WIDTH];
 void Interpolate(ivec2 a, ivec2 b, std::vector<ivec2> & result);
 void Interpolate(Pixel a, Pixel b, std::vector<Pixel> & result);
 void VertexShader(const vec3 & v, Pixel & p);
+void PixelShader(const Pixel & p);
 void ComputePolygonRows(const vector<Pixel> & vertexPixels,
         vector<Pixel> & leftPixels,
         vector<Pixel> & rightPixels);
@@ -194,6 +195,16 @@ void VertexShader(const vec3 & v, Pixel & p) {
     return;
 }
 
+void PixelShader(const Pixel & p) {
+	int x = p.x;
+	int y = p.y;
+
+	if (p.zinv > depthBuffer[y][x]) {
+		depthBuffer[y][x] = p.zinv;
+		PutPixelSDL(screen, x, y, current_color);
+	}
+}
+
 void ComputePolygonRows(const vector<Pixel> & vertexPixels,
         vector<Pixel> & leftPixels,
         vector<Pixel> & rightPixels) {
@@ -262,10 +273,12 @@ void DrawPolygonRows(const vector<Pixel> & leftPixels,
         int x = glm::max(leftPixels[i].x, 0);
 
         while (x <= glm::min(rightPixels[i].x, SCREEN_WIDTH -1)) {
-            if (zinvc > depthBuffer[y][x]) {
-                PutPixelSDL(screen, x, y, current_color);
-                depthBuffer[y][x] = zinvc;
-            }
+        	Pixel p;
+        	p.x = x;
+        	p.y = y;
+        	p.zinv = zinvc;
+
+        	PixelShader(p);
 
             zinvc += step;
             ++x;
