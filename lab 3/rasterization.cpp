@@ -45,7 +45,7 @@ float yawDelta = 0.0007371f;
 // Light source parameters
 vec3 lightPos(0, -0.5, -0.7);
 vec3 lightPower = 1.1f * vec3(1, 1, 1);
-vec3 indirectLightPowerPerArea = 0.5f *vec3(1, 1, 1);
+vec3 indirectLightPowerPerArea = 0.5f * vec3(1, 1, 1);
 
 // FUNCTIONS
 
