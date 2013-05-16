@@ -47,10 +47,10 @@ void Interpolate(Pixel a, Pixel b, std::vector<Pixel> & result);
 void VertexShader(const Vertex & v, Pixel & p);
 void PixelShader(const Pixel & p);
 void ComputePolygonRows(const vector<Pixel> & vertexPixels,
-        vector<Pixel> & leftPixels,
-        vector<Pixel> & rightPixels);
+                        vector<Pixel> & leftPixels,
+                        vector<Pixel> & rightPixels);
 void DrawPolygonRows(const vector<Pixel> & leftPixels,
-        const vector<Pixel> & rightPixels);
+                     const vector<Pixel> & rightPixels);
 void DrawPolygon(const vector<Vertex> & vertices);
 void Update();
 void Draw();
@@ -59,7 +59,7 @@ void UpdateR();
 int main(int argc, char* argv[]) {
     LoadTestModel( triangles );
     screen = InitializeSDL( SCREEN_WIDTH, SCREEN_HEIGHT );
-    t = SDL_GetTicks();	// Set start value for timer.
+    t = SDL_GetTicks(); // Set start value for timer.
 
     while (NoQuitMessageSDL()) {
         Update();
@@ -184,7 +184,7 @@ void Interpolate(Pixel a, Pixel b, std::vector<Pixel> & result) {
     float dx = (b.x - a.x) / divisor;
     float dy = (b.y - a.y) / divisor;
     float dzinv = (b.zinv - a.zinv) / divisor;
-	vec3 dpos3d = (b.pos3d - a.pos3d) * (1.0f /  divisor);
+    vec3 dpos3d = (b.pos3d - a.pos3d) * (1.0f /  divisor);
 
     float xc = a.x;
     float yc = a.y;
@@ -214,36 +214,36 @@ void VertexShader(const Vertex & v, Pixel & p) {
 }
 
 void PixelShader(const Pixel & p) {
-	int x = p.x;
-	int y = p.y;
+    int x = p.x;
+    int y = p.y;
 
-	if (x < 0 || x >= SCREEN_WIDTH ||
-	    y < 0 || y >= SCREEN_HEIGHT)
-	    return;
+    if (x < 0 || x >= SCREEN_WIDTH ||
+        y < 0 || y >= SCREEN_HEIGHT)
+        return;
 
-	if (p.zinv > depthBuffer[y][x]) {
-		depthBuffer[y][x] = p.zinv;
+    if (p.zinv > depthBuffer[y][x]) {
+        depthBuffer[y][x] = p.zinv;
 
-		// Get distance from light source to intersection.
-		vec3 distance = lightPos - p.pos3d;
-		// Get the backwards direction that the light travels.
-		vec3 r = glm::normalize(distance);
-		// The euclidean distance to the light source from the intersection.
-		float radius = glm::length(distance);
+        // Get distance from light source to intersection.
+        vec3 distance = lightPos - p.pos3d;
+        // Get the backwards direction that the light travels.
+        vec3 r = glm::normalize(distance);
+        // The euclidean distance to the light source from the intersection.
+        float radius = glm::length(distance);
 
-		float scalar = glm::dot(r, currentNormal);
-		float divisor = 4 * pi() * radius * radius;
-		vec3 D = lightPower * std::max(scalar, 0.0f) * (1.0f / divisor);
-		vec3 illumination = currentReflectance * (D + indirectLightPowerPerArea);
+        float scalar = glm::dot(r, currentNormal);
+        float divisor = 4 * pi() * radius * radius;
+        vec3 D = lightPower * std::max(scalar, 0.0f) * (1.0f / divisor);
+        vec3 illumination = currentReflectance * (D + indirectLightPowerPerArea);
 
-		// Finally, draw the pixel
-		PutPixelSDL(screen, x, y, illumination);
-	}
+        // Finally, draw the pixel
+        PutPixelSDL(screen, x, y, illumination);
+    }
 }
 
 void ComputePolygonRows(const vector<Pixel> & vertexPixels,
-        vector<Pixel> & leftPixels,
-        vector<Pixel> & rightPixels) {
+                        vector<Pixel> & leftPixels,
+                        vector<Pixel> & rightPixels) {
     // 1. Find max and min y-value of the polygon
     // and compute the number of rows it occupies.
     int min_y = numeric_limits<int>::max();
@@ -303,10 +303,10 @@ void ComputePolygonRows(const vector<Pixel> & vertexPixels,
 void DrawPolygonRows(const vector<Pixel> & leftPixels,
                      const vector<Pixel> & rightPixels) {
     for (int i = 0; i < leftPixels.size(); ++i) {
-    	int N = 1 + rightPixels[i].x - leftPixels[i].x;
-    	if (N <= 0) continue;
-		vector<Pixel> row(N);
-		Interpolate(leftPixels[i], rightPixels[i], row);
+        int N = 1 + rightPixels[i].x - leftPixels[i].x;
+        if (N <= 0) continue;
+        vector<Pixel> row(N);
+        Interpolate(leftPixels[i], rightPixels[i], row);
 
         for (auto it = row.begin(); it != row.end(); ++it) {
             PixelShader(*it);
